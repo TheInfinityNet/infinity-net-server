@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: infinity_net_postgres
+    environment:
+      POSTGRES_USER: infinity_net_user
+      POSTGRES_PASSWORD: TheInfinityNetP@ssw0rd
+      POSTGRES_DB: infinitynet
+    ports:
+      - "5432:5432"
+    volumes:
+      - infinity_net_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    container_name: infinity_net_redis
+    ports:
+      - "6379:6379"
+
+volumes:
+  infinity_net_data:
