@@ -1,0 +1,87 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /infinity-net
+
+jwt:
+  signerKey: "2YkXchw5FloESb63Kc+DFhTARvpWL4jUGCwfGWxuG5SIf/1y/LgJxHnMqaF6A/ij"
+  valid-duration: 3600 # in seconds
+  refreshable-duration: 36000 # in seconds
+
+api:
+  prefix: /api/v1
+
+management:
+  endpoints:
+    web:
+      base-path: ${api.prefix}/actuator
+      exposure:
+        include: "*"
+
+  endpoint:
+    health:
+      show-details: always
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /api-docs
+
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+
+  show-actuator: true
+
+openapi:
+  service:
+    api-docs: rest-api-service-dev
+    title: Infinity Net Backend server REST API
+    description: This is the API documentation for Infinity Net social network.
+    version: 1.0.0
+    server-url: http://localhost:${server.port}${server.servlet.context-path}
+    server-name: Infinity Net Backend API service For Development
+
+logging:
+  level:
+    org:
+      springframework:
+        security: DEBUG
+
+spring:
+  application:
+    name: Infinity Net Server
+
+  profiles:
+    active: dev
+
+  messages:
+    basename: i18n/messages
+    encoding: UTF-8
+    default-locale: en
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/infinitynet}
+    username: ${POSTGRES_USER:infinity_net_user}
+    password: ${POSTGRES_PASSWORD:TheInfinityNetP@ssw0rd}
+    hikari:
+      driver-class-name: org.postgresql.Driver
+      maximum-pool-size: 10
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+  data:
+    redis:
+      port: 6379
+      host: localhost
+
+
+

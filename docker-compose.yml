@@ -1,21 +1,54 @@
+version: '3.9'
+
 services:
-  postgres:
+  infinity_net_postgres:
     image: postgres:16
     container_name: infinity_net_postgres
     environment:
       POSTGRES_USER: infinity_net_user
       POSTGRES_PASSWORD: TheInfinityNetP@ssw0rd
       POSTGRES_DB: infinitynet
+      PGDATA: /var/lib/postgresql/data
     ports:
       - "5432:5432"
     volumes:
-      - infinity_net_data:/var/lib/postgresql/data
+      - infinity-net-data:/var/lib/postgresql/data
+      - postgres-init-db:/docker-entrypoint-initdb.d
+    networks:
+      - infinity-net
+    restart: unless-stopped
+
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: pgadmin4@infinitynet.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+    ports:
+      - "5050:80"
+    depends_on:
+      - infinity_net_postgres
+    networks:
+      - infinity-net
+    restart: unless-stopped
 
   redis:
     image: redis:7
     container_name: infinity_net_redis
     ports:
       - "6379:6379"
+    networks:
+      - infinity-net
+    restart: unless-stopped
+
+networks:
+  infinity-net:
+    driver: bridge
 
 volumes:
-  infinity_net_data:
+  infinity-net-data:
+  pgadmin:
+  postgres-init-db:
