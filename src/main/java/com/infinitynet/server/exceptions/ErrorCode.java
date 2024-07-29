@@ -11,6 +11,10 @@ public enum ErrorCode {
     USER_NOT_EXISTED(105, "user_not_found", HttpStatus.NOT_FOUND),
     USER_EXISTED(102, "user_existed", HttpStatus.BAD_REQUEST),
     UNAUTHENTICATED(106, "unauthenticated", HttpStatus.UNAUTHORIZED),
+    INVALID_TOKEN(107, "invalid_token", HttpStatus.UNAUTHORIZED),
+    CANNOT_SEND_EMAIL(108, "cannot_send_email", HttpStatus.INTERNAL_SERVER_ERROR),
+    USER_NOT_ACTIVATED(109, "user_not_activated", HttpStatus.BAD_REQUEST),
+    INVALID_ACTIVATION_CODE(110, "invalid_activation_code", HttpStatus.BAD_REQUEST)
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {

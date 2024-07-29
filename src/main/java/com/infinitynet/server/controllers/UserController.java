@@ -28,12 +28,6 @@ public class UserController {
 
     UserService userService;
 
-    @PostMapping
-    ResponseEntity<ApiResponse<UserResponse>> createUser(@RequestBody @Valid UserCreationRequest request) {
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(ApiResponse.<UserResponse>builder().result(userService.createUser(request)).build());
-    }
-
     @Operation(summary = "Get my info", description = "Get my info",
             security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping("/my-info")

@@ -25,4 +25,8 @@ public class User extends AbstractEntity {
     @Column(nullable = false)
     String password;
 
+    boolean isActivated = false;
+
+    String verificationCode;
+
 }

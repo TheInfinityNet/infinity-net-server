@@ -27,29 +27,32 @@ import java.util.stream.Stream;
 @Slf4j
 public class SecurityConfig {
 
-    private String API_PREFIX = "/api/v1";
-
-    private final String[] PUBLIC_ENDPOINTS = Stream.of(
-            "/auth/token",
-            "/auth/introspect",
-            "/auth/logout",
-            "/auth/refresh",
-            "/users",
-            "/actuator/health",
-            "/api-docs/**",
-            "/swagger-ui/**"
-
-    ).map(s -> (
-            s.contains("api-docs") ||
-            s.contains("swagger"))
-            ? s : API_PREFIX + s
-    ).toList().toArray(new String[0]);
+    @Value("${api.prefix}")
+    private String API_PREFIX;
 
     @Autowired
     private CustomJwtDecoder customJwtDecoder;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
+
+        String[] PUBLIC_ENDPOINTS = Stream.of(
+                "/auth/sign-up",
+                "/auth/activate/**",
+                "/auth/sign-in",
+                "/auth/introspect",
+                "/auth/logout",
+                "/auth/refresh",
+                "/actuator/health",
+                "/api-docs/**",
+                "/swagger-ui/**"
+
+        ).map(s -> (
+                s.contains("api-docs") ||
+                        s.contains("swagger"))
+                ? s : API_PREFIX + s
+        ).toList().toArray(new String[0]);
+
         // Pass the request to the next filter if the request's endpoint is public
         httpSecurity.authorizeHttpRequests(request ->
         {
@@ -60,7 +63,7 @@ public class SecurityConfig {
 //                    .permitAll();
                     .authenticated();
 
-            log.info("Request: " + request);
+            log.info("Request: {}", request);
         });
 
         // Configure the JWT decoder and authentication converter

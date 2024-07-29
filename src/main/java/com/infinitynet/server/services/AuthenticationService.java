@@ -18,6 +18,7 @@ import com.infinitynet.server.exceptions.AppException;
 import com.infinitynet.server.exceptions.ErrorCode;
 import com.infinitynet.server.repositories.InvalidatedTokenRepository;
 import com.infinitynet.server.repositories.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -34,6 +35,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
+
+import static com.infinitynet.server.exceptions.ErrorCode.*;
 
 @Service
 @RequiredArgsConstructor
@@ -78,7 +81,11 @@ public class AuthenticationService {
 
         boolean authenticated = passwordEncoder.matches(request.getPassword(), user.getPassword());
 
-        if (!authenticated) throw new AppException(ErrorCode.UNAUTHENTICATED);
+        if (!authenticated) throw new AppException(UNAUTHENTICATED);
+
+        boolean activated = user.isActivated();
+
+        if (!activated) throw new AppException(USER_NOT_ACTIVATED);
 
         String token = generateToken(user);
 
@@ -115,7 +122,7 @@ public class AuthenticationService {
 
         String email = signedJWT.getJWTClaimsSet().getSubject();
 
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new AppException(INVALID_TOKEN));
 
         String token = generateToken(user);
 
@@ -131,6 +138,7 @@ public class AuthenticationService {
                 .issueTime(new Date())
                 .expirationTime(new Date(Instant.now().plus(VALID_DURATION, ChronoUnit.SECONDS).toEpochMilli()))
                 .jwtID(UUID.randomUUID().toString())
+                .claim("refresh-expiry", Instant.now().plus(REFRESHABLE_DURATION, ChronoUnit.SECONDS).toEpochMilli())
                 .build();
 
         Payload payload = new Payload(jwtClaimsSet.toJSONObject());
@@ -153,22 +161,34 @@ public class AuthenticationService {
         SignedJWT signedJWT = SignedJWT.parse(token);
 
         Date expiryTime = (isRefresh)
-                ? new Date(signedJWT
-                        .getJWTClaimsSet()
-                        .getIssueTime()
-                        .toInstant()
-                        .plus(REFRESHABLE_DURATION, ChronoUnit.SECONDS)
-                        .toEpochMilli())
+                ? new Date(Long.parseLong(signedJWT.getJWTClaimsSet().getClaim("refresh-expiry").toString()))
                 : signedJWT.getJWTClaimsSet().getExpirationTime();
 
         boolean verified = signedJWT.verify(verifier);
 
-        if (!(verified && expiryTime.after(new Date()))) throw new AppException(ErrorCode.UNAUTHENTICATED);
+        if (!(verified && expiryTime.after(new Date()))) throw new AppException(INVALID_TOKEN);
 
         if (invalidatedTokenRepository.existsById(signedJWT.getJWTClaimsSet().getJWTID()))
-            throw new AppException(ErrorCode.UNAUTHENTICATED);
+            throw new AppException(INVALID_TOKEN);
 
         return signedJWT;
+    }
+
+    @Transactional
+    public AuthenticationResponse activate(String id, String activationCode) {
+        User user = userRepository.findById(id).orElseThrow(() -> new AppException(USER_NOT_EXISTED));
+
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        if (!passwordEncoder.matches(activationCode, user.getVerificationCode())) {
+            throw new AppException(INVALID_ACTIVATION_CODE);
+        }
+
+        user.setActivated(true);
+        user.setVerificationCode(null);
+
+        userRepository.save(user);
+
+        return AuthenticationResponse.builder().authenticated(true).build();
     }
 
 }

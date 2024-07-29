@@ -11,6 +11,12 @@ jwt:
 api:
   prefix: /api/v1
 
+brevo-mail:
+  from-mail: ${BREVO_APP_MAIL}
+  url: https://api.brevo.com
+  api-key: ${BREVO_API_KEY}
+
+# Spring Boot Actuator configuration (Health, Info, Metrics, etc.)
 management:
   endpoints:
     web:
@@ -22,6 +28,7 @@ management:
     health:
       show-details: always
 
+# Springdoc configuration (Swagger UI)
 springdoc:
   api-docs:
     enabled: true
@@ -33,6 +40,7 @@ springdoc:
 
   show-actuator: true
 
+# OpenAPI configuration
 openapi:
   service:
     api-docs: rest-api-service-dev
@@ -42,6 +50,7 @@ openapi:
     server-url: http://localhost:${server.port}${server.servlet.context-path}
     server-name: Infinity Net Backend API service For Development
 
+# Logging configuration
 logging:
   level:
     org:
@@ -49,17 +58,23 @@ logging:
         security: DEBUG
 
 spring:
+  config:
+    import: file:env.properties
+
   application:
     name: Infinity Net Server
 
+# Set the active profile to use
   profiles:
     active: dev
 
+# Set the default locale
   messages:
     basename: i18n/messages
     encoding: UTF-8
     default-locale: en
 
+# Configure the datasource
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/infinitynet}
     username: ${POSTGRES_USER:infinity_net_user}
@@ -68,6 +83,7 @@ spring:
       driver-class-name: org.postgresql.Driver
       maximum-pool-size: 10
 
+# Configure JPA
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
@@ -78,6 +94,23 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
 
+# Configure Kafka
+  kafka:
+    bootstrap-servers: localhost:9094
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+#      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      group-id: send-mail-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+#      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+#      properties:
+#        spring.json.trusted.packages: "*"
+
+# Configure Redis
   data:
     redis:
       port: 6379
