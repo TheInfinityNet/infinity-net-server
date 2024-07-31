@@ -25,4 +25,6 @@ public class InvalidatedToken extends AbstractEntity {
     @Temporal(TemporalType.TIMESTAMP)
     Date expiryTime;
 
+    boolean isBlacklisted = false;
+
 }

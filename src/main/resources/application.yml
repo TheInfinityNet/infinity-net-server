@@ -4,9 +4,10 @@ server:
     context-path: /infinity-net
 
 jwt:
-  signerKey: "2YkXchw5FloESb63Kc+DFhTARvpWL4jUGCwfGWxuG5SIf/1y/LgJxHnMqaF6A/ij"
-  valid-duration: 3600 # in seconds
-  refreshable-duration: 36000 # in seconds
+  accessSignerKey: "1YkXchw5FloESb63Kc+DFhTARvpWL4jUGCwfGWxuG5SIf/1y/LgJxHnMqaF6A/ij"
+  refreshSignerKey: "2YkXchw5FloESb63Kc+DFhTARvpWL4jUGCwfGWxuG5SIf/1y/LgJxHnMqaF6A/ij"
+  valid-duration: 1800 # in seconds
+  refreshable-duration: 2592000 # in seconds
 
 api:
   prefix: /api/v1

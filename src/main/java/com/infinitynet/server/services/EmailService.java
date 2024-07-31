@@ -4,7 +4,7 @@ import com.infinitynet.server.dtos.others.MailActor;
 import com.infinitynet.server.dtos.others.SendEmailDetails;
 import com.infinitynet.server.dtos.requests.EmailRequest;
 import com.infinitynet.server.dtos.responses.EmailResponse;
-import com.infinitynet.server.exceptions.AppException;
+import com.infinitynet.server.exceptions.AuthenticationExceptions;
 import com.infinitynet.server.repositories.httpclients.EmailClient;
 import feign.FeignException;
 import lombok.AccessLevel;
@@ -13,13 +13,10 @@ import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import static com.infinitynet.server.constants.Constants.SEND_MAIL_TO_NEW_USER;
-import static com.infinitynet.server.exceptions.ErrorCode.CANNOT_SEND_EMAIL;
+import static com.infinitynet.server.exceptions.AuthenticationErrorCodes.CANNOT_SEND_EMAIL;
 
 @Service
 @RequiredArgsConstructor
@@ -65,9 +62,9 @@ public class EmailService {
         try {
             return emailClient.sendEmail(apiKey, emailRequest);
 
-        } catch (FeignException e){
+        } catch (FeignException e) {
             log.error("Cannot send email", e);
-            throw new AppException(CANNOT_SEND_EMAIL);
+            throw new AuthenticationExceptions(CANNOT_SEND_EMAIL, HttpStatus.UNPROCESSABLE_ENTITY);
         }
     }
 

@@ -18,14 +18,13 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
-import java.util.Arrays;
 import java.util.stream.Stream;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 @Slf4j
-public class SecurityConfig {
+public class SecurityConfiguration {
 
     @Value("${api.prefix}")
     private String API_PREFIX;
@@ -41,7 +40,7 @@ public class SecurityConfig {
                 "/auth/activate/**",
                 "/auth/sign-in",
                 "/auth/introspect",
-                "/auth/logout",
+                "/auth/sign-out",
                 "/auth/refresh",
                 "/actuator/health",
                 "/api-docs/**",
@@ -91,7 +90,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    JwtAuthenticationConverter jwtAuthenticationConverter() {
+    public JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
         jwtGrantedAuthoritiesConverter.setAuthorityPrefix("");
 
@@ -99,11 +98,6 @@ public class SecurityConfig {
         jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter);
 
         return jwtAuthenticationConverter;
-    }
-
-    @Bean
-    PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
     }
 
 }

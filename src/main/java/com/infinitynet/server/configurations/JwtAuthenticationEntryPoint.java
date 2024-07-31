@@ -3,7 +3,7 @@ package com.infinitynet.server.configurations;
 import java.io.IOException;
 
 import com.infinitynet.server.dtos.responses.ApiResponse;
-import com.infinitynet.server.exceptions.ErrorCode;
+import com.infinitynet.server.exceptions.AuthenticationErrorCodes;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -14,6 +14,7 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static com.infinitynet.server.components.Translator.getLocalizedMessage;
+import static com.infinitynet.server.exceptions.AuthenticationErrorCodes.TOKEN_INVALID;
 
 // This class is used to handle the exception when the user is not authenticated
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
@@ -21,14 +22,13 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     public void commence(
             HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
             throws IOException {
-        ErrorCode errorCode = ErrorCode.UNAUTHENTICATED;
+        AuthenticationErrorCodes authenticationErrorCodes = TOKEN_INVALID;
 
-        response.setStatus(errorCode.getStatusCode().value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
         ApiResponse<?> apiResponse = ApiResponse.builder()
-                .code(errorCode.getCode())
-                .message(getLocalizedMessage(errorCode.getMessage()))
+                .errorCode(authenticationErrorCodes.getCode())
+                .message(getLocalizedMessage(authenticationErrorCodes.getMessage()))
                 .build();
 
         ObjectMapper objectMapper = new ObjectMapper();

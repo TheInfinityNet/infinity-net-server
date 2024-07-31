@@ -21,7 +21,7 @@ import com.nimbusds.jose.JOSEException;
 @Component
 public class CustomJwtDecoder implements JwtDecoder {
 
-    @Value("${jwt.signerKey}")
+    @Value("${jwt.accessSignerKey}")
     private String signerKey;
 
     @Autowired
@@ -33,9 +33,7 @@ public class CustomJwtDecoder implements JwtDecoder {
     public Jwt decode(String token) throws JwtException {
 
         try {
-            IntrospectResponse response = authenticationService.introspect(
-                    IntrospectRequest.builder().token(token).build()
-            );
+            IntrospectResponse response = authenticationService.introspect(new IntrospectRequest(token));
 
             if (!response.isValid()) throw new JwtException("Token invalid");
 

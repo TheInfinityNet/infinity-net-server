@@ -1,6 +1,7 @@
 package com.infinitynet.server.dtos.responses;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.infinitynet.server.dtos.others.Tokens;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -11,10 +12,10 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class AuthenticationResponse {
+public class SignInResponse {
 
-    String token;
+    Tokens tokens;
 
-    boolean authenticated;
+    UserResponse user;
 
 }

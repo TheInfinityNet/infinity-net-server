@@ -33,7 +33,7 @@ public class UserController {
     @GetMapping("/my-info")
     ResponseEntity<ApiResponse<UserResponse>> getMyInfo() {
         return ResponseEntity.status(HttpStatus.OK)
-                .body(ApiResponse.<UserResponse>builder().result(userService.getMyInfo()).build());
+                .body(ApiResponse.<UserResponse>builder().results(userService.getMyInfo()).build());
     }
 
 }
