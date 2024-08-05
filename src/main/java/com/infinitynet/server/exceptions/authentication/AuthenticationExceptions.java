@@ -1,4 +1,4 @@
-package com.infinitynet.server.exceptions;
+package com.infinitynet.server.exceptions.authentication;
 
 import lombok.Getter;
 import org.springframework.http.HttpStatus;

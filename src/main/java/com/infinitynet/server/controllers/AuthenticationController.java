@@ -2,8 +2,9 @@ package com.infinitynet.server.controllers;
 
 import java.text.ParseException;
 
-import com.infinitynet.server.dtos.requests.*;
+import com.infinitynet.server.dtos.requests.authentication.*;
 import com.infinitynet.server.dtos.responses.*;
+import com.infinitynet.server.dtos.responses.authentication.IntrospectResponse;
 import com.infinitynet.server.services.AuthenticationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -32,51 +33,71 @@ public class AuthenticationController {
 
     @Operation(summary = "Sign up", description = "Create new user")
     @PostMapping("/sign-up")
-    ResponseEntity<ApiResponse<UserResponse>> signUp(@RequestBody @Valid UserCreationRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.<UserResponse>builder().results(authenticationService.signUp(request)).build());
+    ResponseEntity<?> signUp(@RequestBody @Valid SignUpRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(authenticationService.signUp(request));
     }
 
-    @Operation(summary = "Activate", description = "Activate user")
-    @GetMapping("/activate/{id}/{code}")
-    ResponseEntity<ApiResponse<ActivationResponse>> activate(@PathVariable String id, @PathVariable String code) {
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(ApiResponse.<ActivationResponse>builder()
-                        .results(authenticationService.activate(id, code)).build());
+    @Operation(summary = "Verify email by code", description = "Verify email by code")
+    @PostMapping("/verify-email-by-code")
+    ResponseEntity<?> verifyEmail(@RequestBody @Valid VerifyEmailByCodeRequest request) {
+        return ResponseEntity.status(HttpStatus.OK).body(authenticationService.verifyEmail(request, null));
+    }
+
+    @Operation(summary = "Verify email by token", description = "Verify email by token")
+    @GetMapping("/verify-email-by-token")
+    ResponseEntity<?> verifyEmail(@RequestParam(name = "token") String token) {
+        return ResponseEntity.status(HttpStatus.OK).body(authenticationService.verifyEmail(null, token));
+    }
+
+    @Operation(summary = "Send email verification", description = "Send email verification")
+    @PostMapping("/send-email-verification")
+    ResponseEntity<?> sendEmailVerification(@RequestBody @Valid SendEmailVerificationRequest request) {
+        return ResponseEntity.status(HttpStatus.OK).body(authenticationService.sendEmailVerification(request));
     }
 
     @Operation(summary = "Sign in", description = "Authenticate user and return token")
     @PostMapping("/sign-in")
-    ResponseEntity<ApiResponse<SignInResponse>> signIn(@RequestBody SignInRequest request) {
-        SignInResponse result = authenticationService.signIn(request);
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(ApiResponse.<SignInResponse>builder().results(result).build());
-    }
-
-    @Operation(summary = "Introspect", description = "Introspect provided token")
-    @PostMapping("/introspect")
-    ResponseEntity<ApiResponse<IntrospectResponse>> introspect(@RequestBody IntrospectRequest request)
-            throws ParseException, JOSEException {
-        IntrospectResponse result = authenticationService.introspect(request);
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(ApiResponse.<IntrospectResponse>builder().results(result).build());
-    }
-
-    @Operation(summary = "Refresh", description = "Refresh token")
-    @PostMapping("/refresh")
-    ResponseEntity<ApiResponse<RefreshResponse>> refresh(@RequestBody RefreshRequest request,
-                                                             HttpServletRequest httpServletRequest)
-            throws ParseException, JOSEException {
-        RefreshResponse result = authenticationService.refreshToken(request, httpServletRequest);
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(ApiResponse.<RefreshResponse>builder().results(result).build());
+    ResponseEntity<?> signIn(@RequestBody @Valid SignInRequest request) {
+        return ResponseEntity.status(HttpStatus.OK).body(authenticationService.signIn(request));
     }
 
     @Operation(summary = "Sign out", description = "Sign out user")
     @PostMapping("/sign-out")
-    ResponseEntity<ApiResponse<Void>> signOut(@RequestBody SignOutRequest request) throws ParseException, JOSEException {
+    void signOut(@RequestBody @Valid SignOutRequest request) throws ParseException, JOSEException {
         authenticationService.signOut(request);
-        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.<Void>builder().build());
+    }
+
+    @Operation(summary = "Refresh", description = "Refresh token")
+    @PostMapping("/refresh")
+    ResponseEntity<?> refresh(@RequestBody @Valid RefreshRequest request,
+                              HttpServletRequest httpServletRequest) throws ParseException, JOSEException {
+        return ResponseEntity.status(HttpStatus.OK).body(authenticationService.refresh(request, httpServletRequest));
+    }
+
+    @Operation(summary = "Send email forgot password", description = "Send email forgot password")
+    @PostMapping("/send-forgot-password")
+    ResponseEntity<?> sendEmailForgotPassword(@RequestBody @Valid SendEmailForgotPasswordRequest request) {
+        return ResponseEntity.status(HttpStatus.OK).body(authenticationService.sendEmailForgotPassword(request));
+    }
+
+    @Operation(summary = "Verify forgot password code", description = "Verify forgot password code")
+    @PostMapping("/forgot-password")
+    ResponseEntity<?> forgotPassword(@RequestBody @Valid ForgotPasswordRequest request) {
+        return ResponseEntity.status(HttpStatus.OK).body(authenticationService.forgotPassword(request));
+    }
+
+    @Operation(summary = "Reset password", description = "Reset password")
+    @PostMapping("/reset-password")
+    ResponseEntity<?> resetPassword(@RequestBody @Valid ResetPasswordRequest request) {
+        return ResponseEntity.status(HttpStatus.OK).body(authenticationService.resetPassword(request));
+    }
+
+    @Operation(summary = "Introspect", description = "Introspect provided token")
+    @PostMapping("/introspect")
+    ResponseEntity<ApiResponse<?>> introspect(@RequestBody @Valid IntrospectRequest request)
+            throws ParseException, JOSEException {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiResponse.<IntrospectResponse>builder().results(authenticationService.introspect(request)).build());
     }
 
 }

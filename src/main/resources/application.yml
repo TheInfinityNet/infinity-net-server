@@ -1,7 +1,12 @@
 server:
   port: 8080
+  tomcat:
+    uri-encoding: UTF-8
+    use-body-encoding: false
   servlet:
     context-path: /infinity-net
+    encoding:
+      charset: UTF-8
 
 jwt:
   accessSignerKey: "1YkXchw5FloESb63Kc+DFhTARvpWL4jUGCwfGWxuG5SIf/1y/LgJxHnMqaF6A/ij"
@@ -95,6 +100,12 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
 
+  # Configure Redis
+  data:
+    redis:
+      port: 6379
+      host: localhost
+
 # Configure Kafka
   kafka:
     bootstrap-servers: localhost:9094
@@ -111,11 +122,6 @@ spring:
 #      properties:
 #        spring.json.trusted.packages: "*"
 
-# Configure Redis
-  data:
-    redis:
-      port: 6379
-      host: localhost
 
 
 

@@ -1,4 +1,4 @@
-package com.infinitynet.server.configurations;
+package com.infinitynet.server.configurations.securityconfigs;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,8 +9,6 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
@@ -37,11 +35,15 @@ public class SecurityConfiguration {
 
         String[] PUBLIC_ENDPOINTS = Stream.of(
                 "/auth/sign-up",
-                "/auth/activate/**",
+                "/auth/verify-email-by-code",
+                "/auth/verify-email-by-token",
+                "/auth/send-email-verification",
+                "/auth/send-forgot-password",
+                "/auth/forgot-password",
+                "/auth/reset-password",
                 "/auth/sign-in",
-                "/auth/introspect",
                 "/auth/sign-out",
-                "/auth/refresh",
+                "/auth/introspect",
                 "/actuator/health",
                 "/api-docs/**",
                 "/swagger-ui/**"

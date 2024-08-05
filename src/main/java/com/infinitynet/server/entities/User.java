@@ -1,9 +1,12 @@
 package com.infinitynet.server.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -27,6 +30,8 @@ public class User extends AbstractEntity {
 
     boolean isActivated = false;
 
-    String verificationCode;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonBackReference
+    List<Verification> verifications;
 
 }

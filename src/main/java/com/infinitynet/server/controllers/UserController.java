@@ -1,13 +1,9 @@
 package com.infinitynet.server.controllers;
 
-import com.infinitynet.server.dtos.requests.UserCreationRequest;
-import com.infinitynet.server.dtos.responses.ApiResponse;
-import com.infinitynet.server.dtos.responses.UserResponse;
 import com.infinitynet.server.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,9 +27,8 @@ public class UserController {
     @Operation(summary = "Get my info", description = "Get my info",
             security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping("/my-info")
-    ResponseEntity<ApiResponse<UserResponse>> getMyInfo() {
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(ApiResponse.<UserResponse>builder().results(userService.getMyInfo()).build());
+    ResponseEntity<?> getMyInfo() {
+        return ResponseEntity.status(HttpStatus.OK).body(userService.getMyInfo());
     }
 
 }

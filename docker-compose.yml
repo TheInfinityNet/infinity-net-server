@@ -38,14 +38,30 @@ services:
     restart: unless-stopped
 
 #  REDIS
-  redis:
+  infinity_net_redis:
     image: redis:7
     container_name: infinity_net_redis
     ports:
       - "6379:6379"
+    volumes:
+      - infinity-net-redis-data:/data
     networks:
       - infinity-net
     restart: unless-stopped
+
+#  REDIS INSIGHT
+  redis_insight:
+    image: redislabs/redisinsight:latest
+    container_name: redis_insight
+    ports:
+      - "5540:5540"
+    volumes:
+      - redis-insight-data:/db
+    depends_on:
+      - infinity_net_redis
+    networks:
+      - infinity-net
+    restart: always
 
 #  KAFKA
   infinity_net_kafka:
@@ -71,3 +87,5 @@ volumes:
   infinity-net-data:
   pgadmin:
   postgres-init-db:
+  infinity-net-redis-data:
+  redis-insight-data:

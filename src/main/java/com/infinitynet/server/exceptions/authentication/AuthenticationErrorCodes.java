@@ -1,4 +1,4 @@
-package com.infinitynet.server.exceptions;
+package com.infinitynet.server.exceptions.authentication;
 
 import lombok.Getter;
 
@@ -18,6 +18,7 @@ public enum AuthenticationErrorCodes {
     INVALID_ACTIVATION_CODE("auth/invalid-activation-code", "invalid_activation_code"),
 
     // Token Errors
+    TOKEN_MISSING("auth/token-missing", "token_missing"),
     TOKEN_INVALID("auth/token-invalid", "token_invalid"),
     TOKEN_EXPIRED("auth/token-expired", "token_expired"),
     INVALID_TOKEN("auth/invalid-token", "invalid_token"),
@@ -25,11 +26,15 @@ public enum AuthenticationErrorCodes {
     TOKEN_BLACKLISTED("auth/token-blacklisted", "token_blacklisted"),
     INVALID_SIGNATURE("auth/invalid-signature", "invalid_signature"),
 
+    // Verification Errors
+    CODE_INVALID("auth/code-invalid", "code_invalid"),
+
     // User Errors
     USER_DISABLED("auth/user-disabled", "user_disabled"),
     USER_NOT_ACTIVATED("auth/user-not-activated", "user_not_activated"),
     USER_NOT_FOUND("auth/user-not-found", "user_not_found"),
     EMAIL_ALREADY_IN_USE("auth/email-already-in-use", "email_already_in_use"),
+    USER_ALREADY_VERIFIED("auth/user-already-verified", "user_already_verified"),
     CANNOT_SEND_EMAIL("auth/cannot-send-email", "cannot_send_email"),
 
     //Rate Limiting Errors

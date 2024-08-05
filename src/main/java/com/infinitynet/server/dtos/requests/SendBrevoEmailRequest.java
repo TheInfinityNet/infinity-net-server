@@ -1,15 +1,10 @@
 package com.infinitynet.server.dtos.requests;
 
 import com.infinitynet.server.dtos.others.MailActor;
-import com.infinitynet.server.dtos.others.MailHeaders;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.util.List;
-import java.util.Map;
-
-import static com.infinitynet.server.constants.Constants.DEFAULT_MAIL_HEADERS_CHARSET;
-import static com.infinitynet.server.constants.Constants.DEFAULT_MAIL_HEADERS_MAILIN_CUSTOM;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -17,7 +12,7 @@ import static com.infinitynet.server.constants.Constants.DEFAULT_MAIL_HEADERS_MA
 @Setter
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class EmailRequest {
+public class SendBrevoEmailRequest {
 
     MailActor sender;
 

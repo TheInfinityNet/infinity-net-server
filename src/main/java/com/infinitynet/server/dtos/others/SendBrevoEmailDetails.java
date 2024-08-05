@@ -1,5 +1,6 @@
 package com.infinitynet.server.dtos.others;
 
+import com.infinitynet.server.entities.Verification;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,12 +15,12 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class SendEmailDetails {
+public class SendBrevoEmailDetails {
 
     List<MailActor> to;
 
     String subject;
 
-    int type;
+    Verification.VerificationType type;
 
 }

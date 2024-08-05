@@ -1,4 +1,4 @@
-package com.infinitynet.server.dtos.responses;
+package com.infinitynet.server.dtos.responses.authentication;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;

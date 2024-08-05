@@ -1,13 +1,15 @@
-package com.infinitynet.server.dtos.requests;
+package com.infinitynet.server.dtos.requests.authentication;
 
 import jakarta.validation.constraints.NotBlank;
+
 import jakarta.validation.constraints.NotNull;
 
-public record RefreshRequest (
+public record IntrospectRequest (
 
     @NotNull
     @NotBlank
-    String refreshToken
+    String token
 
 ) {
+
 }

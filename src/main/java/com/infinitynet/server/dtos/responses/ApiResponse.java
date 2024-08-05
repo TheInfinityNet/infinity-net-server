@@ -18,7 +18,7 @@ public class ApiResponse<T> {
 
     private String message;
 
-    private T results;
+    private Object results;
 
     private T errors;
 

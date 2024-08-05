@@ -1,11 +1,11 @@
-package com.infinitynet.server.configurations;
+package com.infinitynet.server.configurations.securityconfigs;
 
 import java.text.ParseException;
 import java.util.Objects;
 import javax.crypto.spec.SecretKeySpec;
 
-import com.infinitynet.server.dtos.requests.IntrospectRequest;
-import com.infinitynet.server.dtos.responses.IntrospectResponse;
+import com.infinitynet.server.dtos.requests.authentication.IntrospectRequest;
+import com.infinitynet.server.dtos.responses.authentication.IntrospectResponse;
 import com.infinitynet.server.services.AuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,11 +18,13 @@ import org.springframework.stereotype.Component;
 
 import com.nimbusds.jose.JOSEException;
 
+import static com.infinitynet.server.Constants.ACCESS_TOKEN_SIGNATURE_ALGORITHM;
+
 @Component
 public class CustomJwtDecoder implements JwtDecoder {
 
     @Value("${jwt.accessSignerKey}")
-    private String signerKey;
+    private String ACCESS_SIGNER_KEY;
 
     @Autowired
     private AuthenticationService authenticationService;
@@ -42,9 +44,9 @@ public class CustomJwtDecoder implements JwtDecoder {
         }
 
         if (Objects.isNull(nimbusJwtDecoder)) {
-            SecretKeySpec secretKeySpec = new SecretKeySpec(signerKey.getBytes(), "HS512");
+            SecretKeySpec secretKeySpec = new SecretKeySpec(ACCESS_SIGNER_KEY.getBytes(), ACCESS_TOKEN_SIGNATURE_ALGORITHM.getName());
             nimbusJwtDecoder = NimbusJwtDecoder.withSecretKey(secretKeySpec)
-                    .macAlgorithm(MacAlgorithm.HS512)
+                    .macAlgorithm(MacAlgorithm.from(ACCESS_TOKEN_SIGNATURE_ALGORITHM.getName()))
                     .build();
         }
 
