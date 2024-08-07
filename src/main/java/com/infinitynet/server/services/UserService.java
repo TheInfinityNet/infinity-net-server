@@ -1,6 +1,8 @@
 package com.infinitynet.server.services;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -37,20 +39,24 @@ public class UserService {
     UserMapper userMapper = UserMapper.INSTANCE;
     PasswordEncoder passwordEncoder;
 
-//    @PostConstruct
-//    public void generateAndSaveFakeUsers() {
-//        Faker faker = new Faker();
-//        List<User> users = new ArrayList<>();
-//        for (int i = 0; i < 10; i++) { // Generate 10 fake users
-//            String email = faker.internet().emailAddress();
-//            String password = passwordEncoder.encode(email);
-//            User user = new User();
-//            user.setEmail(email);
-//            user.setPassword(password);
-//            users.add(user);
-//        }
-//        userRepository.saveAll(users);
-//    }
+    @PostConstruct
+    public void generateAndSaveFakeUsers() {
+        Faker faker = new Faker();
+        List<User> users = new ArrayList<>();
+        for (int i = 0; i < 10; i++) { // Generate 10 fake users
+            String email = faker.internet().emailAddress();
+            String password = passwordEncoder.encode(email);
+            User user = new User();
+            user.setEmail(email);
+            user.setPassword(password);
+            user.setBio("I like " + faker.animal().name());
+            user.setProfilePictureUrl(faker.internet().domainName());
+            user.setCreatedAt(new Date());
+            user.setUpdatedAt(new Date());
+            users.add(user);
+        }
+        userRepository.saveAll(users);
+    }
 
     public UserResponse createUser(UserCreationRequest request) {
         User user = userMapper.toUser(request);
