@@ -2,9 +2,11 @@ package com.infinitynet.server.controllers;
 
 import java.text.ParseException;
 
+import com.infinitynet.server.annotations.RateLimit;
 import com.infinitynet.server.dtos.requests.authentication.*;
 import com.infinitynet.server.dtos.responses.*;
 import com.infinitynet.server.dtos.responses.authentication.IntrospectResponse;
+import com.infinitynet.server.enums.LimitKeyType;
 import com.infinitynet.server.services.AuthenticationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -57,6 +59,7 @@ public class AuthenticationController {
 
     @Operation(summary = "Sign in", description = "Authenticate user and return token")
     @PostMapping("/sign-in")
+    @RateLimit(limitKeyType = LimitKeyType.BY_IP)
     ResponseEntity<?> signIn(@RequestBody @Valid SignInRequest request) {
         return ResponseEntity.status(HttpStatus.OK).body(authenticationService.signIn(request));
     }
@@ -69,6 +72,7 @@ public class AuthenticationController {
 
     @Operation(summary = "Refresh", description = "Refresh token")
     @PostMapping("/refresh")
+    @RateLimit(limitKeyType = LimitKeyType.BY_TOKEN)
     ResponseEntity<?> refresh(@RequestBody @Valid RefreshRequest request,
                               HttpServletRequest httpServletRequest) throws ParseException, JOSEException {
         return ResponseEntity.status(HttpStatus.OK).body(authenticationService.refresh(request, httpServletRequest));

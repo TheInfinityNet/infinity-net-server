@@ -1,6 +1,7 @@
 package com.infinitynet.server.entities;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.infinitynet.server.enums.VerificationType;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -39,11 +40,5 @@ public class Verification extends AbstractEntity {
     @JoinColumn(name = "owner_id")
     @JsonBackReference
     User user;
-
-    public enum VerificationType {
-        VERIFY_EMAIL_BY_CODE,
-        VERIFY_EMAIL_BY_TOKEN,
-        RESET_PASSWORD,
-    }
 
 }

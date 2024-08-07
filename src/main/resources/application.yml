@@ -1,8 +1,5 @@
 server:
   port: 8080
-  tomcat:
-    uri-encoding: UTF-8
-    use-body-encoding: false
   servlet:
     context-path: /infinity-net
     encoding:

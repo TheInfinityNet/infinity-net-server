@@ -3,7 +3,7 @@ package com.infinitynet.server.exceptions.authentication;
 import lombok.Getter;
 
 @Getter
-public enum AuthenticationErrorCodes {
+public enum AuthenticationErrorCode {
     // Validation Errors
     VALIDATION_ERROR("auth/validation-error", "validation_error"),
     INVALID_EMAIL("auth/invalid-email", "invalid_email"),
@@ -42,7 +42,7 @@ public enum AuthenticationErrorCodes {
     RATE_LIMIT_EXCEEDED("auth/rate-limit-exceeded", "rate_limit_exceeded"),
     ;
 
-    AuthenticationErrorCodes(String code, String message) {
+    AuthenticationErrorCode(String code, String message) {
         this.code = code;
         this.message = message;
     }

@@ -2,7 +2,7 @@ package com.infinitynet.server.services.impls;
 
 import com.infinitynet.server.dtos.responses.UserInfoResponse;
 import com.infinitynet.server.entities.User;
-import com.infinitynet.server.exceptions.authentication.AuthenticationExceptions;
+import com.infinitynet.server.exceptions.authentication.AuthenticationException;
 import com.infinitynet.server.mappers.UserMapper;
 import com.infinitynet.server.repositories.UserRepository;
 import com.infinitynet.server.services.UserService;
@@ -15,7 +15,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import static com.infinitynet.server.exceptions.authentication.AuthenticationErrorCodes.USER_NOT_FOUND;
+import static com.infinitynet.server.exceptions.authentication.AuthenticationErrorCode.USER_NOT_FOUND;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @Service
@@ -50,7 +50,7 @@ public class UserServiceImpl implements UserService {
         String email = context.getAuthentication().getName();
 
         User user = userRepository.findByEmail(email).orElseThrow(() ->
-                new AuthenticationExceptions(USER_NOT_FOUND, NOT_FOUND));
+                new AuthenticationException(USER_NOT_FOUND, NOT_FOUND));
 
         return userMapper.toUserInfoResponse(user);
     }

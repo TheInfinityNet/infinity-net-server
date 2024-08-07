@@ -5,7 +5,8 @@ import com.infinitynet.server.dtos.requests.authentication.*;
 import com.infinitynet.server.dtos.responses.authentication.*;
 import com.infinitynet.server.entities.User;
 import com.infinitynet.server.entities.Verification;
-import com.infinitynet.server.exceptions.authentication.AuthenticationExceptions;
+import com.infinitynet.server.enums.VerificationType;
+import com.infinitynet.server.exceptions.authentication.AuthenticationException;
 import com.infinitynet.server.mappers.UserMapper;
 import com.infinitynet.server.repositories.UserRepository;
 import com.infinitynet.server.repositories.VerificationRepository;
@@ -25,7 +26,6 @@ import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.HttpStatus;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
@@ -39,13 +39,12 @@ import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 import static com.infinitynet.server.components.Translator.getLocalizedMessage;
 import static com.infinitynet.server.Constants.*;
-import static com.infinitynet.server.exceptions.authentication.AuthenticationErrorCodes.TOO_MANY_REQUESTS;
-import static com.infinitynet.server.exceptions.authentication.AuthenticationErrorCodes.*;
+import static com.infinitynet.server.exceptions.authentication.AuthenticationErrorCode.*;
 import static org.springframework.http.HttpStatus.*;
 
 @Service
@@ -90,7 +89,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         try {
             verifyToken(token, false);
 
-        } catch (AuthenticationExceptions e) {
+        } catch (AuthenticationException e) {
             isValid = false;
         }
 
@@ -99,26 +98,23 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public SignInResponse signIn(SignInRequest request) {
-        if (isTooManyRequests())
-            throw new AuthenticationExceptions(TOO_MANY_REQUESTS, HttpStatus.TOO_MANY_REQUESTS);
-
         User user = userRepository
                 .findByEmail(request.email())
-                .orElseThrow(() -> new AuthenticationExceptions(USER_NOT_FOUND, NOT_FOUND));
+                .orElseThrow(() -> new AuthenticationException(USER_NOT_FOUND, NOT_FOUND));
 
         if (isPasswordExpired(user))
-            throw new AuthenticationExceptions(EXPIRED_PASSWORD, CONFLICT);
+            throw new AuthenticationException(EXPIRED_PASSWORD, CONFLICT);
 
         if (isTwoFactorRequired(user))
-            throw new AuthenticationExceptions(TWO_FACTOR_REQUIRED, FORBIDDEN);
+            throw new AuthenticationException(TWO_FACTOR_REQUIRED, FORBIDDEN);
 
         if (isUserDisabled(user))
-            throw new AuthenticationExceptions(USER_DISABLED, FORBIDDEN);
+            throw new AuthenticationException(USER_DISABLED, FORBIDDEN);
 
         if (!passwordEncoder.matches(request.password(), user.getPassword()))
-            throw new AuthenticationExceptions(WRONG_PASSWORD, UNAUTHORIZED);
+            throw new AuthenticationException(WRONG_PASSWORD, UNAUTHORIZED);
 
-        if (!user.isActivated()) throw new AuthenticationExceptions(USER_NOT_ACTIVATED, FORBIDDEN);
+        if (!user.isActivated()) throw new AuthenticationException(USER_NOT_ACTIVATED, FORBIDDEN);
 
         String accessToken = generateToken(user, false);
         String refreshToken = generateToken(user, true);
@@ -132,19 +128,19 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Transactional
     public SignUpResponse signUp(SignUpRequest request) {
         if (userRepository.findByEmail(request.email()).isPresent())
-            throw new AuthenticationExceptions(EMAIL_ALREADY_IN_USE, CONFLICT);
+            throw new AuthenticationException(EMAIL_ALREADY_IN_USE, CONFLICT);
 
         if (!request.password().equals(request.passwordConfirmation()))
-            throw new AuthenticationExceptions(PASSWORD_MIS_MATCH, BAD_REQUEST);
+            throw new AuthenticationException(PASSWORD_MIS_MATCH, BAD_REQUEST);
 
         if (isInvalidEmail(request.email()))
-            throw new AuthenticationExceptions(INVALID_EMAIL, BAD_REQUEST);
+            throw new AuthenticationException(INVALID_EMAIL, BAD_REQUEST);
 
         if (isWeakPassword(request.password()))
-            throw new AuthenticationExceptions(WEAK_PASSWORD, BAD_REQUEST);
+            throw new AuthenticationException(WEAK_PASSWORD, BAD_REQUEST);
 
         if (isTermsNotAccepted())
-            throw new AuthenticationExceptions(TERMS_NOT_ACCEPTED, BAD_REQUEST);
+            throw new AuthenticationException(TERMS_NOT_ACCEPTED, BAD_REQUEST);
 
         User user = userMapper.toUser(request);
         user.setPassword(passwordEncoder.encode(request.password()));
@@ -154,7 +150,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             userRepository.save(user);
 
         } catch (DataIntegrityViolationException exception) {
-            throw new AuthenticationExceptions(EMAIL_ALREADY_IN_USE, CONFLICT);
+            throw new AuthenticationException(EMAIL_ALREADY_IN_USE, CONFLICT);
         }
 
         return new SignUpResponse(getLocalizedMessage("sign_up_success"));
@@ -165,17 +161,17 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     public VerifyEmailResponse verifyEmail(VerifyEmailByCodeRequest request, String token) {
         Verification verification = (request != null)
                 ? verificationRepository.findByCode(request.code()).orElseThrow(() ->
-                new AuthenticationExceptions(CODE_INVALID, BAD_REQUEST))
+                new AuthenticationException(CODE_INVALID, BAD_REQUEST))
 
                 : verificationRepository.findByToken(token).orElseThrow(() ->
-                new AuthenticationExceptions(CODE_INVALID, BAD_REQUEST));
+                new AuthenticationException(CODE_INVALID, BAD_REQUEST));
 
         if (verification.getExpiryTime().before(new Date()))
-            throw new AuthenticationExceptions(CODE_INVALID, UNPROCESSABLE_ENTITY);
+            throw new AuthenticationException(CODE_INVALID, UNPROCESSABLE_ENTITY);
 
         User user = (request != null)
                 ? userRepository.findByEmail(request.email()).orElseThrow(() ->
-                new AuthenticationExceptions(USER_NOT_FOUND, NOT_FOUND))
+                new AuthenticationException(USER_NOT_FOUND, NOT_FOUND))
 
                 : verification.getUser();
 
@@ -208,7 +204,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                         RefreshTokenExpiryTime.getTime() - System.currentTimeMillis());
             }
 
-        } catch (AuthenticationExceptions exception) {
+        } catch (AuthenticationException exception) {
             log.error("Cannot sign out", exception);
             //TODO: Disable the user account
         }
@@ -218,22 +214,31 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Transactional
     public SendEmailVerificationResponse sendEmailVerification(SendEmailVerificationRequest request) {
         User user = userRepository.findByEmail(request.email()).orElseThrow(() ->
-                new AuthenticationExceptions(USER_NOT_FOUND, NOT_FOUND));
+                new AuthenticationException(USER_NOT_FOUND, NOT_FOUND));
 
-        if (request.type().equals(Verification.VerificationType.VERIFY_EMAIL_BY_CODE)
-                || request.type().equals(Verification.VerificationType.VERIFY_EMAIL_BY_TOKEN)) {
+        List<Verification> verifications =
+                verificationRepository.findByUserAndVerificationType(user, request.type());
+
+        if (request.type().equals(VerificationType.VERIFY_EMAIL_BY_CODE)
+                || request.type().equals(VerificationType.VERIFY_EMAIL_BY_TOKEN)) {
             if (user.isActivated())
-                throw new AuthenticationExceptions(USER_ALREADY_VERIFIED, BAD_REQUEST);
+                throw new AuthenticationException(USER_ALREADY_VERIFIED, BAD_REQUEST);
 
-            else
+            else {
+                if (!verifications.isEmpty()) {
+                    verificationRepository.deleteAll(verifications);
+                }
                 sendEmail(request.email(), request.type());
+            }
 
         } else {
-            verificationRepository.delete(
-                    verificationRepository.findByUserAndVerificationType(user, request.type()).orElseThrow(() ->
-                            new AuthenticationExceptions(CANNOT_SEND_EMAIL, BAD_REQUEST))
-            );
-            sendEmail(request.email(), request.type());
+            if (verifications.isEmpty())
+                throw new AuthenticationException(CANNOT_SEND_EMAIL, BAD_REQUEST);
+
+            else {
+                verificationRepository.deleteAll(verifications);
+                sendEmail(request.email(), request.type());
+            }
         }
 
         return new SendEmailVerificationResponse(getLocalizedMessage("resend_verification_email_success"));
@@ -246,10 +251,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         String email = signedJWT.getJWTClaimsSet().getSubject();
 
         User user = userRepository.findByEmail(email).orElseThrow(() ->
-                new AuthenticationExceptions(INVALID_TOKEN, BAD_REQUEST));
+                new AuthenticationException(INVALID_TOKEN, BAD_REQUEST));
 
         if (servletRequest.getHeader("Authorization") == null)
-            throw new AuthenticationExceptions(INVALID_TOKEN, BAD_REQUEST);
+            throw new AuthenticationException(INVALID_TOKEN, BAD_REQUEST);
 
         String accessToken = servletRequest.getHeader("Authorization").substring(7);
         SignedJWT signedAccessTokenJWT = SignedJWT.parse(accessToken);
@@ -257,7 +262,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         Date expiryTime = signedAccessTokenJWT.getJWTClaimsSet().getExpirationTime();
 
         if (!signedAccessTokenJWT.getJWTClaimsSet().getSubject().equals(email))
-            throw new AuthenticationExceptions(INVALID_TOKEN, BAD_REQUEST);
+            throw new AuthenticationException(INVALID_TOKEN, BAD_REQUEST);
 
         if (expiryTime.after(new Date())) {
             baseRedisService.set(jwtID, "revoked");
@@ -273,7 +278,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     @Transactional
     public SendEmailForgotPasswordResponse sendEmailForgotPassword(SendEmailForgotPasswordRequest request) {
-        sendEmail(request.email(), Verification.VerificationType.RESET_PASSWORD);
+        sendEmail(request.email(), VerificationType.RESET_PASSWORD);
         return new SendEmailForgotPasswordResponse(
                 getLocalizedMessage("send_forgot_password_email_success"),
                 Date.from(Instant.now().plus(1, ChronoUnit.MINUTES))
@@ -284,16 +289,16 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Transactional
     public ForgotPasswordResponse forgotPassword(ForgotPasswordRequest request) {
         User user = userRepository.findByEmail(request.email()).orElseThrow(() ->
-                new AuthenticationExceptions(USER_NOT_FOUND, NOT_FOUND));
+                new AuthenticationException(USER_NOT_FOUND, NOT_FOUND));
 
         Verification verification = verificationRepository.findByCode(request.code()).orElseThrow(() ->
-                new AuthenticationExceptions(CODE_INVALID, BAD_REQUEST));
+                new AuthenticationException(CODE_INVALID, BAD_REQUEST));
 
         if (verification.getExpiryTime().before(new Date()))
-            throw new AuthenticationExceptions(CODE_INVALID, UNPROCESSABLE_ENTITY);
+            throw new AuthenticationException(CODE_INVALID, UNPROCESSABLE_ENTITY);
 
         if (!verification.getUser().getEmail().equals(user.getEmail()))
-            throw new AuthenticationExceptions(CODE_INVALID, BAD_REQUEST);
+            throw new AuthenticationException(CODE_INVALID, BAD_REQUEST);
 
         return new ForgotPasswordResponse(
                 getLocalizedMessage("verify_forgot_password_code_success"),
@@ -305,16 +310,16 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Transactional
     public ResetPasswordResponse resetPassword(ResetPasswordRequest request) {
         Verification verification = verificationRepository.findByToken(request.token()).orElseThrow(() ->
-                new AuthenticationExceptions(TOKEN_REVOKED, UNPROCESSABLE_ENTITY));
+                new AuthenticationException(TOKEN_REVOKED, UNPROCESSABLE_ENTITY));
 
         if (verification.getExpiryTime().before(new Date()))
-            throw new AuthenticationExceptions(TOKEN_EXPIRED, UNPROCESSABLE_ENTITY);
+            throw new AuthenticationException(TOKEN_EXPIRED, UNPROCESSABLE_ENTITY);
 
         if (!request.password().equals(request.passwordConfirmation()))
-            throw new AuthenticationExceptions(PASSWORD_MIS_MATCH, BAD_REQUEST);
+            throw new AuthenticationException(PASSWORD_MIS_MATCH, BAD_REQUEST);
 
         if (isWeakPassword(request.password()))
-            throw new AuthenticationExceptions(WEAK_PASSWORD, BAD_REQUEST);
+            throw new AuthenticationException(WEAK_PASSWORD, BAD_REQUEST);
 
         User user = verification.getUser();
         user.setPassword(passwordEncoder.encode(request.password()));
@@ -326,9 +331,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Transactional
-    protected void sendEmail(String email, Verification.VerificationType verificationType) {
+    protected void sendEmail(String email, VerificationType verificationType) {
         User user = userRepository.findByEmail(email).orElseThrow(() ->
-                new AuthenticationExceptions(USER_NOT_FOUND, NOT_FOUND));
+                new AuthenticationException(USER_NOT_FOUND, NOT_FOUND));
 
         String token = UUID.randomUUID().toString();
 
@@ -390,9 +395,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     private SignedJWT verifyToken(String token, boolean isRefresh) throws JOSEException, ParseException {
-        if (isRateLimitExceeded())
-            throw new AuthenticationExceptions(RATE_LIMIT_EXCEEDED, HttpStatus.TOO_MANY_REQUESTS);
-
         JWSVerifier verifier = (isRefresh)
                 ? new MACVerifier(REFRESH_SIGNER_KEY.getBytes())
                 : new MACVerifier(ACCESS_SIGNER_KEY.getBytes());
@@ -405,10 +407,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         if (isRefresh) {
             if (expiryTime.before(new Date()))
-                throw new AuthenticationExceptions(TOKEN_EXPIRED, UNAUTHORIZED);
+                throw new AuthenticationException(TOKEN_EXPIRED, UNAUTHORIZED);
 
             if (!verified)
-                throw new AuthenticationExceptions(INVALID_SIGNATURE, UNAUTHORIZED);
+                throw new AuthenticationException(INVALID_SIGNATURE, UNAUTHORIZED);
 
             SecretKeySpec secretKeySpec = new SecretKeySpec(
                     REFRESH_SIGNER_KEY.getBytes(),
@@ -421,22 +423,22 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 nimbusJwtDecoder.decode(token);
 
             } catch (JwtException e) {
-                throw new AuthenticationExceptions(INVALID_SIGNATURE, UNAUTHORIZED);
+                throw new AuthenticationException(INVALID_SIGNATURE, UNAUTHORIZED);
             }
 
         } else {
             if (!verified || expiryTime.before(new Date()))
-                throw new AuthenticationExceptions(TOKEN_INVALID, UNAUTHORIZED);
+                throw new AuthenticationException(TOKEN_INVALID, UNAUTHORIZED);
         }
 
         String value = (String) baseRedisService.get(signedJWT.getJWTClaimsSet().getJWTID());
 
         if (value != null) {
             if (value.equals("revoked"))
-                throw new AuthenticationExceptions(TOKEN_REVOKED, UNAUTHORIZED);
+                throw new AuthenticationException(TOKEN_REVOKED, UNAUTHORIZED);
 
             else
-                throw new AuthenticationExceptions(TOKEN_BLACKLISTED, UNAUTHORIZED);
+                throw new AuthenticationException(TOKEN_BLACKLISTED, UNAUTHORIZED);
         }
 
         return signedJWT;
@@ -452,10 +454,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
 
         return code.toString();
-    }
-
-    private boolean isTooManyRequests() {
-        return false;
     }
 
     private boolean isPasswordExpired(User user) {
@@ -479,10 +477,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     private boolean isWeakPassword(String password) {
-        return false;
-    }
-
-    private boolean isRateLimitExceeded() {
         return false;
     }
 
