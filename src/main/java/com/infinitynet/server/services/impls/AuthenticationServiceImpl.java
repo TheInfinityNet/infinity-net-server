@@ -335,7 +335,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         Verification verification = Verification.builder()
                 .token(token)
                 .code(generateVerificationCode(6))
-                .expiryTime(Date.from(Instant.now().plus(1, ChronoUnit.MINUTES)))
+                .expiryTime(Date.from(Instant.now().plus(3, ChronoUnit.MINUTES)))
                 .verificationType(verificationType)
                 .user(user)
                 .build();
