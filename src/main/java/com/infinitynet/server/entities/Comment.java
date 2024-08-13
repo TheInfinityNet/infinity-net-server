@@ -40,6 +40,9 @@ public class Comment extends AbstractEntity{
     @JsonManagedReference
     Set<CommentMedia> commentMediaSet;
 
+    @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
+    Set<CommentReaction> commentReactions;
+
     @Column
     String content;
 

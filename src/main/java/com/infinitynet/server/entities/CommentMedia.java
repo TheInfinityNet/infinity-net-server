@@ -37,5 +37,4 @@ public class CommentMedia extends AbstractEntity{
     @Column
     String url;
 
-
 }

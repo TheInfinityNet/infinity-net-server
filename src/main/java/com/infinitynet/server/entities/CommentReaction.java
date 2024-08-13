@@ -21,11 +21,23 @@ public class CommentReaction extends AbstractEntity{
     CommentReactionId Id;
 
     @ManyToOne
+    @MapsId("userId")
+    @JoinColumn(name = "user_id")
+    User user;
+
+    @ManyToOne
+    @MapsId("commentId")
+    @JoinColumn(name = "comment_id")
+    Comment comment;
+
+    @ManyToOne
     @JoinColumn(name = "reaction_type_id", referencedColumnName = "id",
             foreignKey = @ForeignKey(
                     name = "FK_reaction-types_comment-reactions",
-                    foreignKeyDefinition = "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false)
+                    foreignKeyDefinition = "FOREIGN KEY (reaction_type_id) REFERENCES reaction_types(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false)
     ReactionType reactionType;
+
+
 //    @ManyToOne
 //    @JoinColumn(name = "user_id", referencedColumnName = "id",
 //            foreignKey = @ForeignKey(

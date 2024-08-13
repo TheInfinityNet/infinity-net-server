@@ -42,7 +42,12 @@ public class User extends AbstractEntity {
     String bio;
 
     @Column
-    String profilePictureUrl;
+    String avatar;
+
+    @Column
+    String cover;
+
+    
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     @JsonManagedReference
@@ -71,5 +76,7 @@ public class User extends AbstractEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private Set<Comment> comments;
-    
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    Set<CommentReaction> commentReactions;
 }
