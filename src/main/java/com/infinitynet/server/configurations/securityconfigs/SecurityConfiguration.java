@@ -61,8 +61,8 @@ public class SecurityConfiguration {
             request.requestMatchers(PUBLIC_ENDPOINTS)
                     .permitAll()
                     .anyRequest()
-//                    .permitAll();
-                    .authenticated();
+                    .permitAll();
+//                    .authenticated();
 
             log.info("Request: {}", request);
         });

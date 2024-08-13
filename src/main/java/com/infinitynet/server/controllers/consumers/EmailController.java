@@ -11,12 +11,15 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
 import static com.infinitynet.server.Constants.KAFKA_TOPIC_SEND_MAIL;
 import static com.infinitynet.server.entities.Verification.VerificationType.VERIFY_EMAIL_BY_CODE;
 
+@RestController
 @Component
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)

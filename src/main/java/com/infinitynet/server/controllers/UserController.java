@@ -24,11 +24,11 @@ public class UserController {
 
     UserService userService;
 
-    @Operation(summary = "Get my info", description = "Get my info",
+    @Operation(summary = "Get user profile", description = "Get user profile",
             security = @SecurityRequirement(name = "bearerAuth"))
-    @GetMapping("/my-info")
-    ResponseEntity<?> getMyInfo() {
-        return ResponseEntity.status(HttpStatus.OK).body(userService.getMyInfo());
+    @GetMapping("/{userId}")
+    ResponseEntity<?> getProfile(@PathVariable String userId) {
+        return ResponseEntity.status(HttpStatus.OK).body(userService.getUserInfo(userId));
     }
 
 }

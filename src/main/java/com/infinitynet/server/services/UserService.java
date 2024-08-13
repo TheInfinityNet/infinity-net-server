@@ -10,6 +10,7 @@ import java.util.UUID;
 public interface UserService {
 
     UserInfoResponse getMyInfo();
+    UserInfoResponse getUserInfo(String userId);
 //import lombok.AccessLevel;
 //import lombok.RequiredArgsConstructor;
 //import lombok.experimental.FieldDefaults;
