@@ -46,7 +46,8 @@ public class SecurityConfiguration {
                 "/auth/introspect",
                 "/actuator/health",
                 "/api-docs/**",
-                "/swagger-ui/**"
+                "/swagger-ui/**",
+                "/swagger-ui.html"
 
         ).map(s -> (
                 s.contains("api-docs") ||

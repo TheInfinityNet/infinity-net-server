@@ -2,8 +2,8 @@ package com.infinitynet.server.exceptions;
 
 import com.infinitynet.server.dtos.responses.ApiResponse;
 
-import com.infinitynet.server.exceptions.authentication.AuthenticationErrorCodes;
-import com.infinitynet.server.exceptions.authentication.AuthenticationExceptions;
+import com.infinitynet.server.exceptions.authentication.AuthenticationErrorCode;
+import com.infinitynet.server.exceptions.authentication.AuthenticationException;
 import org.springframework.context.NoSuchMessageException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.infinitynet.server.components.Translator.getLocalizedMessage;
-import static com.infinitynet.server.exceptions.authentication.AuthenticationErrorCodes.*;
+import static com.infinitynet.server.exceptions.authentication.AuthenticationErrorCode.*;
 
 @ControllerAdvice
 @Slf4j
@@ -47,16 +47,16 @@ public class GlobalExceptionHandler {
     }
 
     // Handle exceptions that are defined in the application
-    @ExceptionHandler(value = AuthenticationExceptions.class)
-    ResponseEntity<ApiResponse<?>> handlingAuthenticationExceptions(AuthenticationExceptions exception) {
-        AuthenticationErrorCodes authenticationErrorCodes = exception.getAuthenticationErrorCodes();
+    @ExceptionHandler(value = AuthenticationException.class)
+    ResponseEntity<ApiResponse<?>> handlingAuthenticationExceptions(AuthenticationException exception) {
+        AuthenticationErrorCode authenticationErrorCode = exception.getAuthenticationErrorCode();
         ApiResponse<Map<String, String>> apiResponse = new ApiResponse<>();
 
-        apiResponse.setErrorCode(authenticationErrorCodes.getCode());
-        apiResponse.setMessage(getLocalizedMessage(authenticationErrorCodes.getMessage()));
+        apiResponse.setErrorCode(authenticationErrorCode.getCode());
+        apiResponse.setMessage(getLocalizedMessage(authenticationErrorCode.getMessage()));
 
         Map<String, String> errors = new HashMap<>();
-        switch (authenticationErrorCodes) {
+        switch (authenticationErrorCode) {
             case VALIDATION_ERROR -> {
                 errors.put("email", getLocalizedMessage(EXPIRED_PASSWORD.getMessage()));
                 errors.put("password", getLocalizedMessage(EXPIRED_PASSWORD.getMessage()));

@@ -1,6 +1,7 @@
 package com.infinitynet.server.dtos.others;
 
 import com.infinitynet.server.entities.Verification;
+import com.infinitynet.server.enums.VerificationType;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,6 +22,6 @@ public class SendBrevoEmailDetails {
 
     String subject;
 
-    Verification.VerificationType type;
+    VerificationType type;
 
 }

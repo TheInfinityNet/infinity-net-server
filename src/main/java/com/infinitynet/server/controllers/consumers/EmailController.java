@@ -3,7 +3,7 @@ package com.infinitynet.server.controllers.consumers;
 import com.infinitynet.server.dtos.others.MailActor;
 import com.infinitynet.server.dtos.others.SendBrevoEmailDetails;
 import com.infinitynet.server.dtos.responses.EmailResponse;
-import com.infinitynet.server.entities.Verification;
+import com.infinitynet.server.enums.VerificationType;
 import com.infinitynet.server.services.EmailService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 import static com.infinitynet.server.Constants.KAFKA_TOPIC_SEND_MAIL;
-import static com.infinitynet.server.entities.Verification.VerificationType.VERIFY_EMAIL_BY_CODE;
+import static com.infinitynet.server.enums.VerificationType.VERIFY_EMAIL_BY_CODE;
 
 @RestController
 @Component
@@ -36,13 +36,13 @@ public class EmailController {
 
         log.info("Message received: {}", message);
         //log.info("Email: {}", email);
-        EmailResponse response = switch (Verification.VerificationType.valueOf(type)) {
+        EmailResponse response = switch (VerificationType.valueOf(type)) {
             case VERIFY_EMAIL_BY_CODE,
                  VERIFY_EMAIL_BY_TOKEN ->
                 emailService.sendEmail(SendBrevoEmailDetails.builder()
                         .to(List.of(new MailActor("User", email)))
                         .subject("Welcome to Infinity Net")
-                        .type(Verification.VerificationType.valueOf(type))
+                        .type(VerificationType.valueOf(type))
                         .build(), token);
 
             case RESET_PASSWORD ->

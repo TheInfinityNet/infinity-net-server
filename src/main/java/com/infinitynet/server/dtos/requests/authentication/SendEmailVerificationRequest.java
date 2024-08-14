@@ -1,6 +1,7 @@
 package com.infinitynet.server.dtos.requests.authentication;
 
 import com.infinitynet.server.entities.Verification;
+import com.infinitynet.server.enums.VerificationType;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -13,7 +14,7 @@ public record SendEmailVerificationRequest (
         String email,
 
         @NotNull(message = "null_verification_type")
-        Verification.VerificationType type
+        VerificationType type
 
 ) {
 }

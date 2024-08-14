@@ -5,7 +5,7 @@ import com.infinitynet.server.dtos.others.SendBrevoEmailDetails;
 import com.infinitynet.server.dtos.requests.SendBrevoEmailRequest;
 import com.infinitynet.server.dtos.responses.EmailResponse;
 import com.infinitynet.server.entities.Verification;
-import com.infinitynet.server.exceptions.authentication.AuthenticationExceptions;
+import com.infinitynet.server.exceptions.authentication.AuthenticationException;
 import com.infinitynet.server.repositories.VerificationRepository;
 import com.infinitynet.server.repositories.httpclients.BrevoEmailClient;
 import com.infinitynet.server.services.EmailService;
@@ -19,8 +19,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import static com.infinitynet.server.exceptions.authentication.AuthenticationErrorCodes.CANNOT_SEND_EMAIL;
-import static com.infinitynet.server.exceptions.authentication.AuthenticationErrorCodes.TOKEN_EXPIRED;
+import static com.infinitynet.server.exceptions.authentication.AuthenticationErrorCode.CANNOT_SEND_EMAIL;
+import static com.infinitynet.server.exceptions.authentication.AuthenticationErrorCode.TOKEN_EXPIRED;
 
 @Service
 @RequiredArgsConstructor
@@ -46,7 +46,7 @@ public class EmailServiceImpl implements EmailService {
         switch (details.getType()) {
             case VERIFY_EMAIL_BY_CODE -> {
                 Verification verification = verificationRepository.findByToken(token)
-                        .orElseThrow(() -> new AuthenticationExceptions(TOKEN_EXPIRED, HttpStatus.UNPROCESSABLE_ENTITY));
+                        .orElseThrow(() -> new AuthenticationException(TOKEN_EXPIRED, HttpStatus.UNPROCESSABLE_ENTITY));
 
                 sendBrevoEmailRequest = SendBrevoEmailRequest.builder()
                         .sender(new MailActor("Infinity Net Social Network", fromMail))
@@ -68,7 +68,7 @@ public class EmailServiceImpl implements EmailService {
 
             } case RESET_PASSWORD -> {
                 Verification verification = verificationRepository.findByToken(token)
-                        .orElseThrow(() -> new AuthenticationExceptions(TOKEN_EXPIRED, HttpStatus.UNPROCESSABLE_ENTITY));
+                        .orElseThrow(() -> new AuthenticationException(TOKEN_EXPIRED, HttpStatus.UNPROCESSABLE_ENTITY));
 
                 sendBrevoEmailRequest = SendBrevoEmailRequest.builder()
                         .sender(new MailActor("Infinity Net Social Network", fromMail))
@@ -82,7 +82,7 @@ public class EmailServiceImpl implements EmailService {
 
             } default -> {
                 log.error("Unknown email type: {}", details.getType());
-                throw new AuthenticationExceptions(CANNOT_SEND_EMAIL, HttpStatus.UNPROCESSABLE_ENTITY);
+                throw new AuthenticationException(CANNOT_SEND_EMAIL, HttpStatus.UNPROCESSABLE_ENTITY);
             }
         };
 
@@ -91,7 +91,7 @@ public class EmailServiceImpl implements EmailService {
 
         } catch (FeignException e) {
             log.error("Cannot send email", e);
-            throw new AuthenticationExceptions(CANNOT_SEND_EMAIL, HttpStatus.UNPROCESSABLE_ENTITY);
+            throw new AuthenticationException(CANNOT_SEND_EMAIL, HttpStatus.UNPROCESSABLE_ENTITY);
         }
     }
 
