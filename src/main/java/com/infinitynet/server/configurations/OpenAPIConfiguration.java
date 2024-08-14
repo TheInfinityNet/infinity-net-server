@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.headers.Header;
+import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.media.StringSchema;
@@ -38,10 +39,10 @@ public class OpenAPIConfiguration {
         @Value("${openapi.service.description}") String description,
         @Value("${openapi.service.version}") String version,
         @Value("${openapi.service.server-url}") String serverUrl,
-        @Value("${openapi.service.server-name}") String serverName
+        @Value("${openapi.service.server-description}") String serverDescription
     ) {
         return new OpenAPI()
-                .servers(List.of(new Server().url(serverUrl).description(serverName)))
+                .servers(List.of(new Server().url(serverUrl).description(serverDescription)))
                 .info(new Info()
                         .title(title)
                         .description(description)
@@ -49,6 +50,11 @@ public class OpenAPIConfiguration {
                         .license(new License()
                                 .name("Apache 2.0")
                                 .url("http://www.apache.org/licenses/LICENSE-2.0.html")
+                        )
+                        .termsOfService("http://swagger.io/terms/")
+                        .contact(new Contact()
+                                .email("tech.infinitynet.org@gmail.com")
+                                .name("Infinity Net Organization")
                         )
                 )
                 .components(

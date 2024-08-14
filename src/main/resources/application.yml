@@ -51,7 +51,7 @@ openapi:
     description: This is the API documentation for Infinity Net social network.
     version: 1.0.0
     server-url: http://localhost:${server.port}${server.servlet.context-path}
-    server-name: Infinity Net Backend API service For Development
+    server-description: Infinity Net Backend API service For Development
 
 # Logging configuration
 logging:
