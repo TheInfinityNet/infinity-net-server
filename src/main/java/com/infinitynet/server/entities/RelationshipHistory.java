@@ -4,9 +4,6 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import org.hibernate.annotations.CreationTimestamp;
-
-import java.util.Date;
 
 @Getter
 @Setter
@@ -15,8 +12,9 @@ import java.util.Date;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
-@Table(name = "relationship_history")
-public class RelationshipHistory {
+@Table(name = "relationship_histories")
+public class RelationshipHistory extends AbstractEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;
@@ -24,15 +22,11 @@ public class RelationshipHistory {
     @Column
     String status;
 
-    @CreationTimestamp
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(updatable = false)
-    Date changedAt;
-
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "relationship_id", referencedColumnName = "id",
-        foreignKey = @ForeignKey(
-                name = "FK_relationship-histories_relationships",
+        foreignKey = @ForeignKey(name = "fk_relationships_relationship-histories",
                 foreignKeyDefinition = "FOREIGN KEY (relationship_id) REFERENCES relationships(id) ON DELETE CASCADE"), nullable = false)
+    @JsonBackReference
     Relationship relationship;
+
 }

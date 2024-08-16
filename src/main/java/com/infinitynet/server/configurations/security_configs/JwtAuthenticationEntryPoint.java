@@ -1,4 +1,4 @@
-package com.infinitynet.server.configurations.securityconfigs;
+package com.infinitynet.server.configurations.security_configs;
 
 import java.io.IOException;
 
@@ -14,7 +14,7 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static com.infinitynet.server.components.Translator.getLocalizedMessage;
-import static com.infinitynet.server.exceptions.authentication.AuthenticationErrorCode.TOKEN_INVALID;
+import static com.infinitynet.server.exceptions.authentication.AuthenticationErrorCode.TOKEN_MISSING;
 
 // This class is used to handle the exception when the user is not authenticated
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
@@ -22,9 +22,10 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     public void commence(
             HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
             throws IOException {
-        AuthenticationErrorCode authenticationErrorCode = TOKEN_INVALID;
+        AuthenticationErrorCode authenticationErrorCode = TOKEN_MISSING;
 
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 
         ApiResponse<?> apiResponse = ApiResponse.builder()
                 .errorCode(authenticationErrorCode.getCode())

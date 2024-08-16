@@ -2,6 +2,9 @@ package com.infinitynet.server;
 
 import com.nimbusds.jose.JWSAlgorithm;
 
+import java.util.Arrays;
+import java.util.List;
+
 import static com.nimbusds.jose.JWSAlgorithm.HS384;
 import static com.nimbusds.jose.JWSAlgorithm.HS512;
 
@@ -18,16 +21,17 @@ public class Constants {
 
     public static final String DEFAULT_MAIL_HEADERS_CHARSET = "iso-8859-1";
 
-    public static final int SEND_MAIL_TO_NEW_USER = 1;
-
     public static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
-    public static final String REDIS_REVOKED_ACCESS_TOKEN_KEY = "revoked_access_tokens";
+    public static final List<String> ALLOWED_MEDIA_TYPES =
+            Arrays.asList(
+                    "image/jpeg",
+                    "image/png",
+                    "video/mp4"
+            );
 
-    public static final String REDIS_REVOKED_REFRESH_TOKEN_KEY = "revoked_refresh_tokens";
+    public static final String LOCAL_STORAGE_ROOT_FOLDER = "data_backup";
 
-    public static final String REDIS_BLACKLISTED_ACCESS_TOKEN_KEY = "blacklisted_access_tokens";
-
-    public static final String REDIS_BLACKLISTED_REFRESH_TOKEN_KEY = "blacklisted_refresh_tokens";
+    public static final String FIREBASE_ADMIN_JSON_PATH = "firebase-admin.json";
 
 }

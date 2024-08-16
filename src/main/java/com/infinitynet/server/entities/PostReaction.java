@@ -15,32 +15,32 @@ import java.io.Serializable;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
-@Table(name = "comment_reactions")
-public class CommentReaction extends AbstractEntity {
+@Table(name = "post_reactions")
+public class PostReaction extends AbstractEntity {
 
     @EmbeddedId
-    CommentReactionId id;
+    PostReactionId id;
 
     @ManyToOne
     @MapsId("userId")
     @JoinColumn(name = "user_id", referencedColumnName = "id",
-            foreignKey = @ForeignKey(name = "fk_comment-reactions_users",
+            foreignKey = @ForeignKey(name = "fk_post-reactions_users",
                     foreignKeyDefinition = "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false)
     @JsonManagedReference
     User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("commentId")
-    @JoinColumn(name = "comment_id", referencedColumnName = "id",
-            foreignKey = @ForeignKey(name = "fk_comment-reactions_comments",
-                    foreignKeyDefinition = "FOREIGN KEY (comment_id) REFERENCES comments(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false)
+    @MapsId("postId")
+    @JoinColumn(name = "post_id", referencedColumnName = "id",
+            foreignKey = @ForeignKey(name = "fk_post-reactions_posts",
+                    foreignKeyDefinition = "FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false)
     @JsonBackReference
-    Comment comment;
+    Post post;
 
     @ManyToOne
     @MapsId("reactionTypeId")
     @JoinColumn(name = "reaction_type_id", referencedColumnName = "id",
-            foreignKey = @ForeignKey(name = "fk_comment-reactions_reaction-types",
+            foreignKey = @ForeignKey(name = "fk_post-reactions_reaction-types",
                     foreignKeyDefinition = "FOREIGN KEY (reaction_type_id) REFERENCES reaction_types(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false)
     @JsonManagedReference
     ReactionType reactionType;
@@ -51,13 +51,13 @@ public class CommentReaction extends AbstractEntity {
     @FieldDefaults(level = AccessLevel.PRIVATE)
     @Getter
     @Setter
-    public static class CommentReactionId implements Serializable {
+    public static class PostReactionId implements Serializable {
 
         @Column(name = "user_id")
         String userId;
 
-        @Column(name = "comment_id")
-        String commentId;
+        @Column(name = "post_id")
+        String postId;
 
         @Column(name = "reaction_type_id")
         Integer reactionTypeId;
