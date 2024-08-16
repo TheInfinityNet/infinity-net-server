@@ -1,4 +1,4 @@
-package com.infinitynet.server.dtos.others;
+package com.infinitynet.server.enums;
 
 public enum Status {
     ACTIVE, INACTIVE

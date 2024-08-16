@@ -59,7 +59,7 @@ public class UserServiceImpl implements UserService {
     public UserInfoResponse getUserInfo(String userId) {
 
         User user = userRepository.findById(userId).orElseThrow(() ->
-                new AuthenticationExceptions(USER_NOT_FOUND, NOT_FOUND));
+                new AuthenticationException(USER_NOT_FOUND, NOT_FOUND));
 
         return userMapper.toUserInfoResponse(user);
     }

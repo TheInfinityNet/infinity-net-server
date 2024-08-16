@@ -130,6 +130,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         if (userRepository.findByEmail(request.email()).isPresent())
             throw new AuthenticationException(EMAIL_ALREADY_IN_USE, CONFLICT);
 
+        if (userRepository.findByUsername(request.username()).isPresent())
+            throw new AuthenticationException(USERNAME_ALREADY_IN_USE, CONFLICT);
+
         if (!request.password().equals(request.passwordConfirmation()))
             throw new AuthenticationException(PASSWORD_MIS_MATCH, BAD_REQUEST);
 
@@ -142,6 +145,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         if (isTermsNotAccepted())
             throw new AuthenticationException(TERMS_NOT_ACCEPTED, BAD_REQUEST);
 
+//        if (isValidInfomation(request)) {
+//            throw new AuthenticationException(VALIDATION_ERROR, BAD_REQUEST);
+//        }
         User user = userMapper.toUser(request);
         user.setPassword(passwordEncoder.encode(request.password()));
         user.setActivated(false);

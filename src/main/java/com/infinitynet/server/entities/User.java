@@ -2,16 +2,13 @@ package com.infinitynet.server.entities;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.infinitynet.server.dtos.others.Status;
+import com.infinitynet.server.enums.Gender;
 import jakarta.persistence.*;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
-import java.util.Date;
-import java.util.List;
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.Set;
 
@@ -38,6 +35,9 @@ public class User extends AbstractEntity {
     @Column(unique = true, nullable = false, length = 100)
     String email;
 
+    @Column(unique = true, nullable = false, length = 50)
+    String username;
+
     @Column(nullable = false)
     String password;
 
@@ -56,29 +56,26 @@ public class User extends AbstractEntity {
     @Column
     String cover;
 
-    @Column
-    String userName;
-
-    @Column
+    @Column(nullable = false)
     String firstName;
 
-    @Column
+    @Column(nullable = false)
     String lastName;
 
     @Column
     String middleName;
 
-    @Column
+    @Column(unique = true, nullable = false, length = 20)
     String mobileNumber;
 
-    @Column(name = "brithdate")
-    LocalDate birthDate;
+    @Column
+    LocalDate birthdate;
 
     @Column
     boolean acceptTerms;
 
-    @Column
-    String gender;
+    @Enumerated(EnumType.STRING)
+    Gender gender;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     @JsonManagedReference

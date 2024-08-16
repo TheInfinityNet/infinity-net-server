@@ -34,6 +34,7 @@ public enum AuthenticationErrorCode {
     USER_NOT_ACTIVATED("auth/user-not-activated", "user_not_activated"),
     USER_NOT_FOUND("auth/user-not-found", "user_not_found"),
     EMAIL_ALREADY_IN_USE("auth/email-already-in-use", "email_already_in_use"),
+    USERNAME_ALREADY_IN_USE("auth/username-already-in-use", "username_already_in_use"),
     USER_ALREADY_VERIFIED("auth/user-already-verified", "user_already_verified"),
     CANNOT_SEND_EMAIL("auth/cannot-send-email", "cannot_send_email"),
 
