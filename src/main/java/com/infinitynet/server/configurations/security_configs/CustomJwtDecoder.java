@@ -1,4 +1,4 @@
-package com.infinitynet.server.configurations.securityconfigs;
+package com.infinitynet.server.configurations.security_configs;
 
 import java.text.ParseException;
 import java.util.Objects;

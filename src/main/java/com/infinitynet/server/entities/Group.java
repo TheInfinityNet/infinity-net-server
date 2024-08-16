@@ -13,7 +13,9 @@ import lombok.experimental.FieldDefaults;
 @Entity
 @Table(name = "groups")
 public class Group {
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;
+
 }

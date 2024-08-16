@@ -1,4 +1,4 @@
-package com.infinitynet.server.configurations.securityconfigs;
+package com.infinitynet.server.configurations.security_configs;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,7 +69,8 @@ public class SecurityConfiguration {
         });
 
         // Configure the JWT decoder and authentication converter
-        httpSecurity.oauth2ResourceServer(oauth2 -> oauth2.jwt(jwtConfigurer -> jwtConfigurer
+        httpSecurity.oauth2ResourceServer(oauth2 -> oauth2.jwt(
+                jwtConfigurer -> jwtConfigurer
                         .decoder(customJwtDecoder)
                         .jwtAuthenticationConverter(jwtAuthenticationConverter()))
                 .authenticationEntryPoint(new JwtAuthenticationEntryPoint()));

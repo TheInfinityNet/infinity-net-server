@@ -1,6 +1,6 @@
 package com.infinitynet.server.enums;
 
-public enum LimitKeyType {
+public enum RateLimitKeyType {
 
     BY_TOKEN,
 

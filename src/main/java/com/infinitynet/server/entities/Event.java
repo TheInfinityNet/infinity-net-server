@@ -1,27 +1,34 @@
 package com.infinitynet.server.entities;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.*;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
-import java.util.Date;
+@Getter
+@Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
+@Entity
+@Table(name = "events")
+public class Event extends AbstractEntity {
 
-public class Event extends AbstractEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;
 
-    @Column
-    String userId;
-
-    @Column
-    String name;
-
-    @Column
-    String description;
+    @ManyToOne
+    @JoinColumn(name = "user_id", referencedColumnName = "id",
+            foreignKey = @ForeignKey(name = "fk_events_users",
+                    foreignKeyDefinition = "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false)
+    @JsonManagedReference
+    User user;
 
     @Column(nullable = false)
-    Date eventDate;
+    String name;
+
+    String description;
 
 }
