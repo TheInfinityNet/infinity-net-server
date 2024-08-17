@@ -10,9 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface VerificationRepository extends JpaRepository<Verification, Long> {
-
-    Optional<Verification> findByToken(String token);
+public interface VerificationRepository extends JpaRepository<Verification, String> {
 
     Optional<Verification> findByCode(String code);
 

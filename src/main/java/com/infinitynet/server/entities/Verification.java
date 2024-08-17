@@ -19,10 +19,7 @@ import java.util.Date;
 public class Verification extends AbstractEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
-
-    @Column(nullable = false)
+    @GeneratedValue(strategy = GenerationType.UUID)
     String token;
 
     @Column(length = 6)

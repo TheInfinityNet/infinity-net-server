@@ -1,17 +1,13 @@
 package com.infinitynet.server.services.impls;
 
-import com.infinitynet.server.dtos.others.Tokens;
-import com.infinitynet.server.dtos.requests.authentication.*;
-import com.infinitynet.server.dtos.responses.authentication.*;
 import com.infinitynet.server.entities.User;
 import com.infinitynet.server.entities.Verification;
 import com.infinitynet.server.enums.VerificationType;
 import com.infinitynet.server.exceptions.authentication.AuthenticationException;
-import com.infinitynet.server.mappers.UserMapper;
-import com.infinitynet.server.repositories.UserRepository;
 import com.infinitynet.server.repositories.VerificationRepository;
 import com.infinitynet.server.services.AuthenticationService;
 import com.infinitynet.server.services.BaseRedisService;
+import com.infinitynet.server.services.UserService;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
@@ -53,13 +49,11 @@ import static org.springframework.http.HttpStatus.*;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AuthenticationServiceImpl implements AuthenticationService {
 
-    UserRepository userRepository;
+    UserService userService;
 
     VerificationRepository verificationRepository;
 
     PasswordEncoder passwordEncoder;
-
-    UserMapper userMapper = UserMapper.INSTANCE;
 
     KafkaTemplate<String, String> kafkaTemplate;
 
@@ -82,8 +76,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     protected long REFRESHABLE_DURATION;
 
     @Override
-    public IntrospectResponse introspect(IntrospectRequest request) throws JOSEException, ParseException {
-        String token = request.token();
+    public boolean introspect(String token) throws JOSEException, ParseException {
         boolean isValid = true;
 
         try {
@@ -93,14 +86,85 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             isValid = false;
         }
 
-        return IntrospectResponse.builder().valid(isValid).build();
+        return isValid;
     }
 
     @Override
-    public SignInResponse signIn(SignInRequest request) {
-        User user = userRepository
-                .findByEmail(request.email())
-                .orElseThrow(() -> new AuthenticationException(USER_NOT_FOUND, NOT_FOUND));
+    public void signUp(User user, String confirmationPassword) {
+        if (userService.existsByEmail(user.getEmail()))
+            throw new AuthenticationException(EMAIL_ALREADY_IN_USE, CONFLICT);
+
+        if (!user.getPassword().equals(confirmationPassword))
+            throw new AuthenticationException(PASSWORD_MIS_MATCH, BAD_REQUEST);
+
+        if (isInvalidEmail(user.getEmail()))
+            throw new AuthenticationException(INVALID_EMAIL, BAD_REQUEST);
+
+        if (isWeakPassword(user.getPassword()))
+            throw new AuthenticationException(WEAK_PASSWORD, BAD_REQUEST);
+
+        if (isTermsNotAccepted())
+            throw new AuthenticationException(TERMS_NOT_ACCEPTED, BAD_REQUEST);
+
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+
+        try {
+            userService.createUser(user);
+
+        } catch (DataIntegrityViolationException exception) {
+            throw new AuthenticationException(EMAIL_ALREADY_IN_USE, CONFLICT);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void sendEmailVerification(String email, VerificationType verificationType) {
+        User user = userService.findByEmail(email);
+
+        List<Verification> verifications = verificationRepository.findByUserAndVerificationType(user, verificationType);
+
+        if (verificationType.equals(VerificationType.VERIFY_EMAIL_BY_CODE)
+                || verificationType.equals(VerificationType.VERIFY_EMAIL_BY_TOKEN)) {
+            if (user.isActivated())
+                throw new AuthenticationException(USER_ALREADY_VERIFIED, BAD_REQUEST);
+
+            else {
+                if (!verifications.isEmpty()) verificationRepository.deleteAll(verifications);
+
+                sendEmail(email, verificationType);
+            }
+
+        } else {
+            if (verifications.isEmpty()) throw new AuthenticationException(CANNOT_SEND_EMAIL, BAD_REQUEST);
+
+            else {
+                verificationRepository.deleteAll(verifications);
+                sendEmail(email, verificationType);
+            }
+        }
+    }
+
+    @Override
+    @Transactional
+    public void verifyEmail(User user, String code, String token) {
+        Verification verification = (code != null)
+                ? verificationRepository.findByCode(code).orElseThrow(() ->
+                new AuthenticationException(CODE_INVALID, BAD_REQUEST))
+
+                : verificationRepository.findById(token).orElseThrow(() ->
+                new AuthenticationException(CODE_INVALID, BAD_REQUEST));
+
+        if (verification.getExpiryTime().before(new Date()))
+            throw new AuthenticationException(CODE_INVALID, UNPROCESSABLE_ENTITY);
+
+        userService.activateUser((user != null) ? user : verification.getUser());
+
+        verificationRepository.delete(verification);
+    }
+
+    @Override
+    public User signIn(String email, String password) {
+        User user = userService.findByEmail(email);
 
         if (isPasswordExpired(user))
             throw new AuthenticationException(EXPIRED_PASSWORD, CONFLICT);
@@ -111,246 +175,16 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         if (isUserDisabled(user))
             throw new AuthenticationException(USER_DISABLED, FORBIDDEN);
 
-        if (!passwordEncoder.matches(request.password(), user.getPassword()))
+        if (!passwordEncoder.matches(password, user.getPassword()))
             throw new AuthenticationException(WRONG_PASSWORD, UNAUTHORIZED);
 
         if (!user.isActivated()) throw new AuthenticationException(USER_NOT_ACTIVATED, FORBIDDEN);
 
-        String accessToken = generateToken(user, false);
-        String refreshToken = generateToken(user, true);
-
-        return SignInResponse.builder()
-                .tokens(new Tokens(accessToken, refreshToken))
-                .user(userMapper.toUserInfoResponse(user)).build();
+        return user;
     }
 
     @Override
-    @Transactional
-    public SignUpResponse signUp(SignUpRequest request) {
-        if (userRepository.findByEmail(request.email()).isPresent())
-            throw new AuthenticationException(EMAIL_ALREADY_IN_USE, CONFLICT);
-
-        if (!request.password().equals(request.passwordConfirmation()))
-            throw new AuthenticationException(PASSWORD_MIS_MATCH, BAD_REQUEST);
-
-        if (isInvalidEmail(request.email()))
-            throw new AuthenticationException(INVALID_EMAIL, BAD_REQUEST);
-
-        if (isWeakPassword(request.password()))
-            throw new AuthenticationException(WEAK_PASSWORD, BAD_REQUEST);
-
-        if (isTermsNotAccepted())
-            throw new AuthenticationException(TERMS_NOT_ACCEPTED, BAD_REQUEST);
-
-        User user = userMapper.toUser(request);
-        user.setPassword(passwordEncoder.encode(request.password()));
-        user.setActivated(false);
-
-        try {
-            userRepository.save(user);
-
-        } catch (DataIntegrityViolationException exception) {
-            throw new AuthenticationException(EMAIL_ALREADY_IN_USE, CONFLICT);
-        }
-
-        return new SignUpResponse(getLocalizedMessage("sign_up_success"));
-    }
-
-    @Override
-    @Transactional
-    public VerifyEmailResponse verifyEmail(VerifyEmailByCodeRequest request, String token) {
-        Verification verification = (request != null)
-                ? verificationRepository.findByCode(request.code()).orElseThrow(() ->
-                new AuthenticationException(CODE_INVALID, BAD_REQUEST))
-
-                : verificationRepository.findByToken(token).orElseThrow(() ->
-                new AuthenticationException(CODE_INVALID, BAD_REQUEST));
-
-        if (verification.getExpiryTime().before(new Date()))
-            throw new AuthenticationException(CODE_INVALID, UNPROCESSABLE_ENTITY);
-
-        User user = (request != null)
-                ? userRepository.findByEmail(request.email()).orElseThrow(() ->
-                new AuthenticationException(USER_NOT_FOUND, NOT_FOUND))
-
-                : verification.getUser();
-
-        user.setActivated(true);
-
-        userRepository.save(user);
-        verificationRepository.delete(verification);
-
-        return new VerifyEmailResponse(getLocalizedMessage("verify_email_success"));
-    }
-
-    @Override
-    public void signOut(SignOutRequest request) throws ParseException, JOSEException {
-        try {
-            SignedJWT signAccessToken = verifyToken(request.accessToken(), false);
-            Date AccessTokenExpiryTime = signAccessToken.getJWTClaimsSet().getExpirationTime();
-
-            if (AccessTokenExpiryTime.after(new Date())) {
-                baseRedisService.set(signAccessToken.getJWTClaimsSet().getJWTID(), "revoked");
-                baseRedisService.setTimeToLive(signAccessToken.getJWTClaimsSet().getJWTID(),
-                        AccessTokenExpiryTime.getTime() - System.currentTimeMillis());
-            }
-
-            SignedJWT signRefreshToken = verifyToken(request.refreshToken(), true);
-            Date RefreshTokenExpiryTime = signRefreshToken.getJWTClaimsSet().getExpirationTime();
-
-            if (RefreshTokenExpiryTime.after(new Date())) {
-                baseRedisService.set(signRefreshToken.getJWTClaimsSet().getJWTID(), "revoked");
-                baseRedisService.setTimeToLive(signRefreshToken.getJWTClaimsSet().getJWTID(),
-                        RefreshTokenExpiryTime.getTime() - System.currentTimeMillis());
-            }
-
-        } catch (AuthenticationException exception) {
-            log.error("Cannot sign out", exception);
-            //TODO: Disable the user account
-        }
-    }
-
-    @Override
-    @Transactional
-    public SendEmailVerificationResponse sendEmailVerification(SendEmailVerificationRequest request) {
-        User user = userRepository.findByEmail(request.email()).orElseThrow(() ->
-                new AuthenticationException(USER_NOT_FOUND, NOT_FOUND));
-
-        List<Verification> verifications =
-                verificationRepository.findByUserAndVerificationType(user, request.type());
-
-        if (request.type().equals(VerificationType.VERIFY_EMAIL_BY_CODE)
-                || request.type().equals(VerificationType.VERIFY_EMAIL_BY_TOKEN)) {
-            if (user.isActivated())
-                throw new AuthenticationException(USER_ALREADY_VERIFIED, BAD_REQUEST);
-
-            else {
-                if (!verifications.isEmpty()) {
-                    verificationRepository.deleteAll(verifications);
-                }
-                sendEmail(request.email(), request.type());
-            }
-
-        } else {
-            if (verifications.isEmpty())
-                throw new AuthenticationException(CANNOT_SEND_EMAIL, BAD_REQUEST);
-
-            else {
-                verificationRepository.deleteAll(verifications);
-                sendEmail(request.email(), request.type());
-            }
-        }
-
-        return new SendEmailVerificationResponse(getLocalizedMessage("resend_verification_email_success"));
-    }
-
-    @Override
-    public RefreshResponse refresh(RefreshRequest request, HttpServletRequest servletRequest)
-            throws ParseException, JOSEException {
-        SignedJWT signedJWT = verifyToken(request.refreshToken(), true);
-        String email = signedJWT.getJWTClaimsSet().getSubject();
-
-        User user = userRepository.findByEmail(email).orElseThrow(() ->
-                new AuthenticationException(INVALID_TOKEN, BAD_REQUEST));
-
-        if (servletRequest.getHeader("Authorization") == null)
-            throw new AuthenticationException(INVALID_TOKEN, BAD_REQUEST);
-
-        String accessToken = servletRequest.getHeader("Authorization").substring(7);
-        SignedJWT signedAccessTokenJWT = SignedJWT.parse(accessToken);
-        String jwtID = signedAccessTokenJWT.getJWTClaimsSet().getJWTID();
-        Date expiryTime = signedAccessTokenJWT.getJWTClaimsSet().getExpirationTime();
-
-        if (!signedAccessTokenJWT.getJWTClaimsSet().getSubject().equals(email))
-            throw new AuthenticationException(INVALID_TOKEN, BAD_REQUEST);
-
-        if (expiryTime.after(new Date())) {
-            baseRedisService.set(jwtID, "revoked");
-            baseRedisService.setTimeToLive(jwtID, expiryTime.getTime() - System.currentTimeMillis());
-        }
-
-        return new RefreshResponse(
-                getLocalizedMessage("refresh_token_success"),
-                generateToken(user, false)
-        );
-    }
-
-    @Override
-    @Transactional
-    public SendEmailForgotPasswordResponse sendEmailForgotPassword(SendEmailForgotPasswordRequest request) {
-        sendEmail(request.email(), VerificationType.RESET_PASSWORD);
-        return new SendEmailForgotPasswordResponse(
-                getLocalizedMessage("send_forgot_password_email_success"),
-                Date.from(Instant.now().plus(1, ChronoUnit.MINUTES))
-        );
-    }
-
-    @Override
-    @Transactional
-    public ForgotPasswordResponse forgotPassword(ForgotPasswordRequest request) {
-        User user = userRepository.findByEmail(request.email()).orElseThrow(() ->
-                new AuthenticationException(USER_NOT_FOUND, NOT_FOUND));
-
-        Verification verification = verificationRepository.findByCode(request.code()).orElseThrow(() ->
-                new AuthenticationException(CODE_INVALID, BAD_REQUEST));
-
-        if (verification.getExpiryTime().before(new Date()))
-            throw new AuthenticationException(CODE_INVALID, UNPROCESSABLE_ENTITY);
-
-        if (!verification.getUser().getEmail().equals(user.getEmail()))
-            throw new AuthenticationException(CODE_INVALID, BAD_REQUEST);
-
-        return new ForgotPasswordResponse(
-                getLocalizedMessage("verify_forgot_password_code_success"),
-                verification.getToken()
-        );
-    }
-
-    @Override
-    @Transactional
-    public ResetPasswordResponse resetPassword(ResetPasswordRequest request) {
-        Verification verification = verificationRepository.findByToken(request.token()).orElseThrow(() ->
-                new AuthenticationException(TOKEN_REVOKED, UNPROCESSABLE_ENTITY));
-
-        if (verification.getExpiryTime().before(new Date()))
-            throw new AuthenticationException(TOKEN_EXPIRED, UNPROCESSABLE_ENTITY);
-
-        if (!request.password().equals(request.passwordConfirmation()))
-            throw new AuthenticationException(PASSWORD_MIS_MATCH, BAD_REQUEST);
-
-        if (isWeakPassword(request.password()))
-            throw new AuthenticationException(WEAK_PASSWORD, BAD_REQUEST);
-
-        User user = verification.getUser();
-        user.setPassword(passwordEncoder.encode(request.password()));
-
-        userRepository.save(user);
-        verificationRepository.delete(verification);
-
-        return new ResetPasswordResponse(getLocalizedMessage("reset_password_success"));
-    }
-
-    @Transactional
-    protected void sendEmail(String email, VerificationType verificationType) {
-        User user = userRepository.findByEmail(email).orElseThrow(() ->
-                new AuthenticationException(USER_NOT_FOUND, NOT_FOUND));
-
-        String token = UUID.randomUUID().toString();
-
-        Verification verification = Verification.builder()
-                .token(token)
-                .code(generateVerificationCode(6))
-                .expiryTime(Date.from(Instant.now().plus(3, ChronoUnit.MINUTES)))
-                .verificationType(verificationType)
-                .user(user)
-                .build();
-
-        verificationRepository.save(verification);
-
-        kafkaTemplate.send(KAFKA_TOPIC_SEND_MAIL,   verificationType + ":" + email + ":" + token);
-    }
-
-    private String generateToken(User user, boolean isRefresh) {
+    public String generateToken(User user, boolean isRefresh) {
         JWSHeader accessHeader = new JWSHeader(ACCESS_TOKEN_SIGNATURE_ALGORITHM);
         JWSHeader refreshHeader = new JWSHeader(REFRESH_TOKEN_SIGNATURE_ALGORITHM);
 
@@ -392,6 +226,121 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             log.error("Cannot create token", e);
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public User refresh(String refreshToken, HttpServletRequest servletRequest) throws ParseException, JOSEException {
+        SignedJWT signedJWT = verifyToken(refreshToken, true);
+        String email = signedJWT.getJWTClaimsSet().getSubject();
+
+        User user;
+        try {
+            user = userService.findByEmail(email);
+
+        } catch (AuthenticationException e) {
+            throw new AuthenticationException(INVALID_TOKEN, BAD_REQUEST);
+        }
+
+        if (servletRequest.getHeader("Authorization") == null)
+            throw new AuthenticationException(INVALID_TOKEN, BAD_REQUEST);
+
+        String accessToken = servletRequest.getHeader("Authorization").substring(7);
+        SignedJWT signedAccessTokenJWT = SignedJWT.parse(accessToken);
+        String jwtID = signedAccessTokenJWT.getJWTClaimsSet().getJWTID();
+        Date expiryTime = signedAccessTokenJWT.getJWTClaimsSet().getExpirationTime();
+
+        if (!signedAccessTokenJWT.getJWTClaimsSet().getSubject().equals(email))
+            throw new AuthenticationException(INVALID_TOKEN, BAD_REQUEST);
+
+        if (expiryTime.after(new Date())) {
+            baseRedisService.set(jwtID, "revoked");
+            baseRedisService.setTimeToLive(jwtID, expiryTime.getTime() - System.currentTimeMillis());
+        }
+
+        return user;
+    }
+
+    @Override
+    @Transactional
+    public void sendEmailForgotPassword(String email) {
+        sendEmail(email, VerificationType.RESET_PASSWORD);
+    }
+
+    @Override
+    @Transactional
+    public String forgotPassword(User user, String code) {
+        Verification verification = verificationRepository.findByCode(code).orElseThrow(() ->
+                new AuthenticationException(CODE_INVALID, BAD_REQUEST));
+
+        if (verification.getExpiryTime().before(new Date()))
+            throw new AuthenticationException(CODE_INVALID, UNPROCESSABLE_ENTITY);
+
+        if (!verification.getUser().getEmail().equals(user.getEmail()))
+            throw new AuthenticationException(CODE_INVALID, BAD_REQUEST);
+
+        return verification.getToken();
+    }
+
+    @Override
+    @Transactional
+    public void resetPassword(String token, String password, String confirmationPassword) {
+        Verification verification = verificationRepository.findById(token).orElseThrow(() ->
+                new AuthenticationException(TOKEN_REVOKED, UNPROCESSABLE_ENTITY));
+
+        if (verification.getExpiryTime().before(new Date()))
+            throw new AuthenticationException(TOKEN_EXPIRED, UNPROCESSABLE_ENTITY);
+
+        if (!password.equals(confirmationPassword))
+            throw new AuthenticationException(PASSWORD_MIS_MATCH, BAD_REQUEST);
+
+        if (isWeakPassword(password))
+            throw new AuthenticationException(WEAK_PASSWORD, BAD_REQUEST);
+
+        User user = verification.getUser();
+        userService.updatePassword(user, passwordEncoder.encode(password));
+        verificationRepository.delete(verification);
+    }
+
+    @Override
+    public void signOut(String accessToken, String refreshToken) throws ParseException, JOSEException {
+        try {
+            SignedJWT signAccessToken = verifyToken(accessToken, false);
+            Date AccessTokenExpiryTime = signAccessToken.getJWTClaimsSet().getExpirationTime();
+
+            if (AccessTokenExpiryTime.after(new Date())) {
+                baseRedisService.set(signAccessToken.getJWTClaimsSet().getJWTID(), "revoked");
+                baseRedisService.setTimeToLive(signAccessToken.getJWTClaimsSet().getJWTID(),
+                        AccessTokenExpiryTime.getTime() - System.currentTimeMillis());
+            }
+
+            SignedJWT signRefreshToken = verifyToken(refreshToken, true);
+            Date RefreshTokenExpiryTime = signRefreshToken.getJWTClaimsSet().getExpirationTime();
+
+            if (RefreshTokenExpiryTime.after(new Date())) {
+                baseRedisService.set(signRefreshToken.getJWTClaimsSet().getJWTID(), "revoked");
+                baseRedisService.setTimeToLive(signRefreshToken.getJWTClaimsSet().getJWTID(),
+                        RefreshTokenExpiryTime.getTime() - System.currentTimeMillis());
+            }
+
+        } catch (AuthenticationException exception) {
+            log.error("Cannot sign out", exception);
+            //TODO: Disable the user account
+        }
+    }
+
+    @Transactional
+    protected void sendEmail(String email, VerificationType verificationType) {
+        User user = userService.findByEmail(email);
+
+        Verification verification = verificationRepository.save(Verification.builder()
+                .code(generateVerificationCode(6))
+                .expiryTime(Date.from(Instant.now().plus(3, ChronoUnit.MINUTES)))
+                .verificationType(verificationType)
+                .user(user)
+                .build());
+
+        kafkaTemplate.send(KAFKA_TOPIC_SEND_MAIL,
+                verificationType + ":" + email + ":" + verification.getToken() + ":" + verification.getCode());
     }
 
     private SignedJWT verifyToken(String token, boolean isRefresh) throws JOSEException, ParseException {

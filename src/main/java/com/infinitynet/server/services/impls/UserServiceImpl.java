@@ -6,6 +6,7 @@ import com.infinitynet.server.exceptions.authentication.AuthenticationException;
 import com.infinitynet.server.mappers.UserMapper;
 import com.infinitynet.server.repositories.UserRepository;
 import com.infinitynet.server.services.UserService;
+import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -48,10 +49,7 @@ public class UserServiceImpl implements UserService {
     public UserInfoResponse getMyInfo() {
         SecurityContext context = SecurityContextHolder.getContext();
         String email = context.getAuthentication().getName();
-
-        User user = userRepository.findByEmail(email).orElseThrow(() ->
-                new AuthenticationException(USER_NOT_FOUND, NOT_FOUND));
-
+        User user = findByEmail(email);
         return userMapper.toUserInfoResponse(user);
     }
 
@@ -62,6 +60,37 @@ public class UserServiceImpl implements UserService {
                 new AuthenticationException(USER_NOT_FOUND, NOT_FOUND));
 
         return userMapper.toUserInfoResponse(user);
+    }
+
+    @Override
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email).orElseThrow(() ->
+                new AuthenticationException(USER_NOT_FOUND, NOT_FOUND));
+    }
+
+    @Override
+    public boolean existsByEmail(String email) {
+        return userRepository.existsByEmail(email);
+    }
+
+    @Override
+    @Transactional
+    public User createUser(User user) {
+        return userRepository.save(user);
+    }
+
+    @Override
+    @Transactional
+    public void updatePassword(User user, String password) {
+        user.setPassword(password);
+        userRepository.save(user);
+    }
+
+    @Override
+    @Transactional
+    public void activateUser(User user) {
+        user.setActivated(true);
+        userRepository.save(user);
     }
 
 }

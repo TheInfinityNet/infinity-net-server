@@ -20,8 +20,8 @@ import java.util.List;
 public class ReactionType {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Integer id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    String id;
 
     @OneToMany(mappedBy = "reactionType", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonBackReference

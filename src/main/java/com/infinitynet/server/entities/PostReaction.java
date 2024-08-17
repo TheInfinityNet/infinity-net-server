@@ -2,6 +2,7 @@ package com.infinitynet.server.entities;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.infinitynet.server.enums.ReactionTypeName;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -37,13 +38,8 @@ public class PostReaction extends AbstractEntity {
     @JsonBackReference
     Post post;
 
-    @ManyToOne
-    @MapsId("reactionTypeId")
-    @JoinColumn(name = "reaction_type_id", referencedColumnName = "id",
-            foreignKey = @ForeignKey(name = "fk_post-reactions_reaction-types",
-                    foreignKeyDefinition = "FOREIGN KEY (reaction_type_id) REFERENCES reaction_types(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false)
-    @JsonManagedReference
-    ReactionType reactionType;
+    @Column(name = "reaction_type", nullable = false)
+    ReactionTypeName reactionType;
 
     @Embeddable
     @NoArgsConstructor
@@ -58,9 +54,6 @@ public class PostReaction extends AbstractEntity {
 
         @Column(name = "post_id")
         String postId;
-
-        @Column(name = "reaction_type_id")
-        Integer reactionTypeId;
 
     }
 

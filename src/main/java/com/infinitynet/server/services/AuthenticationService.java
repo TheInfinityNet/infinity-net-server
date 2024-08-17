@@ -4,6 +4,8 @@ import java.text.ParseException;
 
 import com.infinitynet.server.dtos.requests.authentication.*;
 import com.infinitynet.server.dtos.responses.authentication.*;
+import com.infinitynet.server.entities.User;
+import com.infinitynet.server.enums.VerificationType;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
 
@@ -12,25 +14,26 @@ import com.nimbusds.jose.*;
 @Service
 public interface AuthenticationService {
 
-    IntrospectResponse introspect(IntrospectRequest request) throws JOSEException, ParseException;
+    boolean introspect(String token) throws JOSEException, ParseException;
 
-    SignInResponse signIn(SignInRequest request);
+    void signUp(User user, String confirmationPassword);
 
-    SignUpResponse signUp(SignUpRequest request);
+    void sendEmailVerification(String email, VerificationType verificationType);
 
-    void signOut(SignOutRequest request) throws ParseException, JOSEException;
+    void verifyEmail(User user, String code, String token);
 
-    SendEmailVerificationResponse sendEmailVerification(SendEmailVerificationRequest request);
+    User signIn(String email, String password);
 
-    VerifyEmailResponse verifyEmail(VerifyEmailByCodeRequest request, String token);
+    String generateToken(User user, boolean isRefresh);
 
-    RefreshResponse refresh(RefreshRequest request,
-                            HttpServletRequest servletRequest) throws ParseException, JOSEException;
+    User refresh(String refreshToken, HttpServletRequest servletRequest) throws ParseException, JOSEException;
 
-    SendEmailForgotPasswordResponse sendEmailForgotPassword(SendEmailForgotPasswordRequest request);
+    void sendEmailForgotPassword(String email);
 
-    ForgotPasswordResponse forgotPassword(ForgotPasswordRequest request);
+    String forgotPassword(User user, String code);
 
-    ResetPasswordResponse resetPassword(ResetPasswordRequest request);
+    void resetPassword(String token, String password, String confirmationPassword);
+
+    void signOut(String accessToken, String refreshToken) throws ParseException, JOSEException;
 
 }

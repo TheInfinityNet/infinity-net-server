@@ -4,8 +4,6 @@ import java.text.ParseException;
 import java.util.Objects;
 import javax.crypto.spec.SecretKeySpec;
 
-import com.infinitynet.server.dtos.requests.authentication.IntrospectRequest;
-import com.infinitynet.server.dtos.responses.authentication.IntrospectResponse;
 import com.infinitynet.server.services.AuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,9 +33,7 @@ public class CustomJwtDecoder implements JwtDecoder {
     public Jwt decode(String token) throws JwtException {
 
         try {
-            IntrospectResponse response = authenticationService.introspect(new IntrospectRequest(token));
-
-            if (!response.isValid()) throw new JwtException("Token invalid");
+            if (!authenticationService.introspect(token)) throw new JwtException("Token invalid");
 
         } catch (JOSEException | ParseException e) {
             throw new JwtException(e.getMessage());

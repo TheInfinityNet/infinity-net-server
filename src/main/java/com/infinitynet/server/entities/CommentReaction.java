@@ -60,7 +60,7 @@ public class CommentReaction extends AbstractEntity {
         String commentId;
 
         @Column(name = "reaction_type_id")
-        Integer reactionTypeId;
+        String reactionTypeId;
 
     }
 
