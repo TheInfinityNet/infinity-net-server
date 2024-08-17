@@ -130,7 +130,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         if (userRepository.findByEmail(request.email()).isPresent())
             throw new AuthenticationException(EMAIL_ALREADY_IN_USE, CONFLICT);
 
-        if (userRepository.findByUsername(request.username()).isPresent())
+        if (userRepository.findByUserName(request.userName()).isPresent())
             throw new AuthenticationException(USERNAME_ALREADY_IN_USE, CONFLICT);
 
         if (!request.password().equals(request.passwordConfirmation()))
@@ -142,7 +142,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         if (isWeakPassword(request.password()))
             throw new AuthenticationException(WEAK_PASSWORD, BAD_REQUEST);
 
-        if (isTermsNotAccepted())
+        if (!request.acceptTerms())
             throw new AuthenticationException(TERMS_NOT_ACCEPTED, BAD_REQUEST);
 
 //        if (isValidInfomation(request)) {
@@ -471,10 +471,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     private boolean isUserDisabled(User user) {
-        return false;
-    }
-
-    private boolean isTermsNotAccepted() {
         return false;
     }
 

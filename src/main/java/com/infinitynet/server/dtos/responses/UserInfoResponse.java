@@ -15,28 +15,12 @@ public class UserInfoResponse {
 
     String id;
 
-    String avatar;
-
-    String cover;
-
-    String email;
-
-    String bio;
-
-    String username;
+    String userName;
 
     String firstName;
 
     String lastName;
 
     String middleName;
-
-    String mobileNumber;
-
-    LocalDate birthDate;
-
-    boolean acceptTerms;
-
-    Gender gender;
 
 }

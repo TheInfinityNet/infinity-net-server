@@ -9,19 +9,19 @@ import java.time.LocalDate;
 
 public record SignUpRequest(
 
-        @NotNull(message = "null_first_name")
-        @NotBlank(message = "blank_first_name")
+        @NotNull(message = "null_name")
+        @NotBlank(message = "blank_name")
         String firstName,
 
-        @NotNull(message = "null_last_name")
-        @NotBlank(message = "blank_last_name")
+        @NotNull(message = "null_name")
+        @NotBlank(message = "blank_name")
         String lastName,
 
         String middleName,
 
-        @NotNull(message = "null_username")
-        @NotBlank(message = "blank_username")
-        String username,
+        @NotNull(message = "null_name")
+        @NotBlank(message = "blank_name")
+        String userName,
 
         @NotNull(message = "null_email")
         @NotBlank(message = "blank_email")

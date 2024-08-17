@@ -1,5 +1,6 @@
 package com.infinitynet.server.controllers;
 
+import com.infinitynet.server.dtos.responses.UserInfoResponse;
 import com.infinitynet.server.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -28,7 +29,7 @@ public class UserController {
     @Operation(summary = "Get user profile", description = "Get user profile",
             security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping("/{userId}")
-    ResponseEntity<?> getProfile(@PathVariable String userId) {
+    ResponseEntity<UserInfoResponse> getProfile(@PathVariable String userId) {
         return ResponseEntity.status(OK).body(userService.getUserInfo(userId));
     }
 

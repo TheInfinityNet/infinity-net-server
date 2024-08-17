@@ -21,22 +21,12 @@ import java.util.Set;
 @Entity
 @Table(name = "users")
 public class User extends AbstractEntity {
-/*
-    Search history  Done
-    Message         Done
-    Setting         Done
-    Relationship    Done
-    Notification    Done
- */
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;
 
     @Column(unique = true, nullable = false, length = 100)
     String email;
-
-    @Column(unique = true, nullable = false, length = 50)
-    String username;
 
     @Column(nullable = false)
     String password;
