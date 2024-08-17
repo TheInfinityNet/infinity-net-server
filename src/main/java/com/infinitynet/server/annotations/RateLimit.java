@@ -1,6 +1,6 @@
 package com.infinitynet.server.annotations;
 
-import com.infinitynet.server.enums.LimitKeyType;
+import com.infinitynet.server.enums.RateLimitKeyType;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -15,6 +15,6 @@ public @interface RateLimit {
 
     int timeWindow() default 60; // Seconds
 
-    LimitKeyType limitKeyType() default LimitKeyType.BY_IP;
+    RateLimitKeyType[] limitKeyTypes() default { RateLimitKeyType.BY_IP };
 
 }

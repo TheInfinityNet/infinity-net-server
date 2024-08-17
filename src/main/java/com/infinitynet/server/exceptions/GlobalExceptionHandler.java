@@ -4,6 +4,8 @@ import com.infinitynet.server.dtos.responses.ApiResponse;
 
 import com.infinitynet.server.exceptions.authentication.AuthenticationErrorCode;
 import com.infinitynet.server.exceptions.authentication.AuthenticationException;
+import com.infinitynet.server.exceptions.file_storage.FileStorageErrorCode;
+import com.infinitynet.server.exceptions.file_storage.FileStorageException;
 import org.springframework.context.NoSuchMessageException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -46,7 +48,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(apiResponse);
     }
 
-    // Handle exceptions that are defined in the application
+    // Handle authentication exceptions
     @ExceptionHandler(value = AuthenticationException.class)
     ResponseEntity<ApiResponse<?>> handlingAuthenticationExceptions(AuthenticationException exception) {
         AuthenticationErrorCode authenticationErrorCode = exception.getAuthenticationErrorCode();
@@ -92,6 +94,21 @@ public class GlobalExceptionHandler {
         };
 
         apiResponse.setErrors(errors);
+
+        return ResponseEntity.status(exception.getHttpStatus()).body(apiResponse);
+    }
+
+    // Handle file storage exceptions
+    @ExceptionHandler(value = FileStorageException.class)
+    ResponseEntity<ApiResponse<?>> handlingAuthenticationExceptions(FileStorageException exception) {
+        FileStorageErrorCode authenticationErrorCode = exception.getFileStorageErrorCode();
+        ApiResponse<?> apiResponse = new ApiResponse<>();
+
+        apiResponse.setErrorCode(authenticationErrorCode.getCode());
+        apiResponse.setMessage(getLocalizedMessage(authenticationErrorCode.getMessage()));
+        if (exception.getMoreInfo() != null) {
+            apiResponse.setMessage(getLocalizedMessage(authenticationErrorCode.getMessage(), exception.getMoreInfo()));
+        }
 
         return ResponseEntity.status(exception.getHttpStatus()).body(apiResponse);
     }

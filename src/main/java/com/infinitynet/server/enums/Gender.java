@@ -1,22 +1,11 @@
 package com.infinitynet.server.enums;
 
 public enum Gender {
-    MALE("Male"),
-    FEMALE("Female"),
-    OTHER("Other");
 
-    private final String displayName;
+    MALE,
 
-    Gender(String displayName) {
-        this.displayName = displayName;
-    }
+    FEMALE,
 
-    public String getDisplayName() {
-        return displayName;
-    }
+    OTHER
 
-    @Override
-    public String toString() {
-        return displayName;
-    }
 }

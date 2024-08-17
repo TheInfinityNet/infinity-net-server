@@ -6,8 +6,8 @@ server:
       charset: UTF-8
 
 jwt:
-  accessSignerKey: "1YkXchw5FloESb63Kc+DFhTARvpWL4jUGCwfGWxuG5SIf/1y/LgJxHnMqaF6A/ij"
-  refreshSignerKey: "2YkXchw5FloESb63Kc+DFhTARvpWL4jUGCwfGWxuG5SIf/1y/LgJxHnMqaF6A/ij"
+  accessSignerKey: ${ACCESS_SIGNER_KEY}
+  refreshSignerKey: ${REFRESH_SIGNER_KEY}
   valid-duration: 1800 # in seconds
   refreshable-duration: 2592000 # in seconds
 
@@ -66,6 +66,12 @@ spring:
 
   application:
     name: Infinity Net Server
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
 
 # Set the active profile to use
   profiles:

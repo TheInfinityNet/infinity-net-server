@@ -41,71 +41,90 @@ public class User extends AbstractEntity {
     @Column(nullable = false)
     String password;
 
+    @Column(name = "is_activated", nullable = false)
     boolean isActivated;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    @JsonBackReference
-    List<Verification> verifications;
-
-    @Column
     String bio;
 
-    @Column
     String avatar;
 
-    @Column
     String cover;
 
-    @Column(nullable = false)
+    @Column(name = "user_name", nullable = false, unique = true)
+    String userName;
+
+    @Column(name = "first_name", nullable = false)
     String firstName;
 
-    @Column(nullable = false)
+    @Column(name = "last_name", nullable = false)
     String lastName;
 
-    @Column
+    @Column(name = "middle_name")
     String middleName;
 
-    @Column(unique = true, nullable = false, length = 20)
+    @Column(name = "mobile_number")
     String mobileNumber;
 
-    @Column
+    @Column(name = "birthdate")
     LocalDate birthdate;
 
-    @Column
+    @Column(name = "accept_terms", nullable = false)
     boolean acceptTerms;
 
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     Gender gender;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    @JsonManagedReference
-    private Set<Setting> settings;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonBackReference
+    List<Verification> verifications;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonBackReference
+    List<Setting> settings;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonBackReference
+    List<Event> events;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonBackReference
+    List<Notification> notifications;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonBackReference
+    List<SearchingHistory> searchingHistories;
 
     @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
-    private Set<Message> sentMessages;
+    @JsonBackReference
+    List<Message> sentMessages;
 
     @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
-    private Set<Message> receivedMessages;
+    @JsonBackReference
+    List<Message> receivedMessages;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
-    private Set<Notification> notifications;
+    @JsonBackReference
+    List<Relationship> relationships;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
-    private Set<SeachingHistory> seachingHistories;
+    @JsonBackReference
+    List<Post> posts;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
-    private Set<Relationship> relationships;
+    @JsonBackReference
+    List<PostReaction> postReactions;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
-    private Set<Comment> comments;
+    @JsonBackReference
+    List<Comment> comments;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    Set<CommentReaction> commentReactions;
+    @JsonBackReference
+    List<CommentReaction> commentReactions;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonBackReference
+    List<AuditLog> auditLogs;
 
 }

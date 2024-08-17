@@ -1,5 +1,6 @@
 package com.infinitynet.server.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
@@ -16,6 +17,7 @@ import java.util.Set;
 @FieldDefaults(level=AccessLevel.PRIVATE)
 @Table(name = "media_types")
 public class MediaType {
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;
@@ -24,6 +26,7 @@ public class MediaType {
     String type;
 
     @OneToMany(mappedBy = "mediaType")
-    @JsonManagedReference
+    @JsonBackReference
     Set<CommentMedia> commentMedia;
+
 }

@@ -1,7 +1,7 @@
 package com.infinitynet.server.components;
 
 import com.infinitynet.server.annotations.RateLimit;
-import com.infinitynet.server.enums.LimitKeyType;
+import com.infinitynet.server.enums.RateLimitKeyType;
 import com.infinitynet.server.exceptions.authentication.AuthenticationErrorCode;
 import com.infinitynet.server.exceptions.authentication.AuthenticationException;
 import com.nimbusds.jwt.SignedJWT;
@@ -38,39 +38,41 @@ public class RateLimitAspect {
         // Get information from the annotation
         int limit = rateLimit.limit();
         int timeWindow = rateLimit.timeWindow();
-        LimitKeyType limitKeyType = rateLimit.limitKeyType();
+        RateLimitKeyType[] rateLimitKeyType = rateLimit.limitKeyTypes();
 
-        String key = generateKey(limitKeyType);
+        for (RateLimitKeyType keyType : rateLimitKeyType) {
+            String key = generateKey(keyType);
 
-        requestCounts.putIfAbsent(key, new ConcurrentHashMap<>());
-        Map<String, AtomicInteger> timeWindowMap = requestCounts.get(key);
+            requestCounts.putIfAbsent(key, new ConcurrentHashMap<>());
+            Map<String, AtomicInteger> timeWindowMap = requestCounts.get(key);
 
-        // Check if the request count exceeds the limit
-        AtomicInteger count = timeWindowMap.computeIfAbsent(
-                String.valueOf(System.currentTimeMillis() / 1000),
-                k -> new AtomicInteger(0)
-        );
+            // Check if the request count exceeds the limit
+            AtomicInteger count = timeWindowMap.computeIfAbsent(
+                    String.valueOf(System.currentTimeMillis() / 1000),
+                    k -> new AtomicInteger(0)
+            );
 
-        if (count.incrementAndGet() > limit) {
-            switch (limitKeyType) {
-                case BY_TOKEN:
-                    throw new AuthenticationException(RATE_LIMIT_EXCEEDED, TOO_MANY_REQUESTS);
+            if (count.incrementAndGet() > limit) {
+                switch (keyType) {
+                    case BY_TOKEN:
+                        throw new AuthenticationException(RATE_LIMIT_EXCEEDED, TOO_MANY_REQUESTS);
 
-                default:
-                    throw new AuthenticationException(
-                            AuthenticationErrorCode.TOO_MANY_REQUESTS,
-                            HttpStatus.TOO_MANY_REQUESTS
-                    );
+                    default:
+                        throw new AuthenticationException(
+                                AuthenticationErrorCode.TOO_MANY_REQUESTS,
+                                HttpStatus.TOO_MANY_REQUESTS
+                        );
+                }
             }
-        }
 
-        // Remove expired time windows
-        timeWindowMap.entrySet().removeIf(
-                entry -> (System.currentTimeMillis() / 1000) - Long.parseLong(entry.getKey()) > timeWindow);
+            // Remove expired time windows
+            timeWindowMap.entrySet().removeIf(
+                    entry -> (System.currentTimeMillis() / 1000) - Long.parseLong(entry.getKey()) > timeWindow);
+        }
     }
 
-    private String generateKey(LimitKeyType limitKeyType) throws ParseException {
-        switch (limitKeyType) {
+    private String generateKey(RateLimitKeyType rateLimitKeyType) throws ParseException {
+        switch (rateLimitKeyType) {
             case BY_TOKEN:
                 String authHeader = request.getHeader("Authorization");
                 if (authHeader != null && authHeader.startsWith("Bearer ")) {

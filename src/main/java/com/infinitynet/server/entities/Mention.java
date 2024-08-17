@@ -13,6 +13,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level=AccessLevel.PRIVATE)
 @Table(name = "mentions")
 public class Mention extends AbstractEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;

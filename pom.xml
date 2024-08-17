@@ -36,11 +36,19 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java.version>21</java.version>
+
 		<projectlombok-lombok.version>1.18.34</projectlombok-lombok.version>
 		<mapstruct.version>1.5.5.Final</mapstruct.version>
 		<openapi.version>2.5.0</openapi.version>
 		<spring-cloud.version>2023.0.3</spring-cloud.version>
+
+		<!--google-properties-->
+		<google-cloud.version>26.44.0</google-cloud.version>
+		<google-cloud-storage.version>2.41.0</google-cloud-storage.version>
+		<firebase-admin.version>9.3.0</firebase-admin.version>
+
 		<jedis.version>5.1.4</jedis.version>
+		<javafaker.version>1.0.2</javafaker.version>
 	</properties>
 
 	<dependencies>
@@ -100,6 +108,19 @@
 			<artifactId>spring-kafka</artifactId>
 		</dependency>
 
+		<!--GOOGLE CLOUD SERVICES-->
+		<dependency>
+			<groupId>com.google.cloud</groupId>
+			<artifactId>google-cloud-storage</artifactId>
+			<version>${google-cloud-storage.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.google.firebase</groupId>
+			<artifactId>firebase-admin</artifactId>
+			<version>${firebase-admin.version}</version>
+		</dependency>
+
 		<!--ACTUATOR-->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -147,7 +168,7 @@
 		<dependency>
 			<groupId>com.github.javafaker</groupId>
 			<artifactId>javafaker</artifactId>
-			<version>1.0.2</version>
+			<version>${javafaker.version}</version>
 		</dependency>
 
 		<!--TEST-->
@@ -173,10 +194,20 @@
 
 	<dependencyManagement>
 		<dependencies>
+			<!--SPRING CLOUD-->
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-dependencies</artifactId>
 				<version>${spring-cloud.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+
+			<!--GOOGLE CLOUD-->
+			<dependency>
+				<groupId>com.google.cloud</groupId>
+				<artifactId>libraries-bom</artifactId>
+				<version>${google-cloud.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
