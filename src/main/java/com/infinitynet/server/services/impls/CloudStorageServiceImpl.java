@@ -28,7 +28,7 @@ public class CloudStorageServiceImpl implements CloudStorageService {
 
 
     @Override
-    public String storeFile(MultipartFile file, String fileName) {
+    public void storeFile(MultipartFile file, String filePath) {
         if (file.isEmpty()) throw new FileStorageException(EMPTY_FILE, BAD_REQUEST);
 
         if (!isMedia(file)) throw new FileStorageException(INVALID_FILE_TYPE, BAD_REQUEST);
@@ -43,14 +43,23 @@ public class CloudStorageServiceImpl implements CloudStorageService {
             fileStream = file.getInputStream();
 
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new FileStorageException(CAN_NOT_STORE_FILE, BAD_REQUEST);
         }
 
         String fileExtension = FilenameUtils.getExtension(file.getOriginalFilename());
-        Blob blob = bucket.create(fileName/* + "." + fileExtension*/, fileStream, file.getContentType());
-        URL signedUrl = blob.signUrl(365 * 100, TimeUnit.DAYS);
+        bucket.create(filePath + "." + fileExtension, fileStream, file.getContentType());
+    }
 
-        return signedUrl.toString();
+    @Override
+    public String getFileUrl(String filePath) {
+        Bucket bucket = StorageClient.getInstance().bucket();
+        Blob blob = bucket.get(filePath);
+
+        if (blob == null) throw new FileStorageException(COULD_NOT_READ_FILE, BAD_REQUEST);
+
+        URL url = blob.signUrl(365 * 100, TimeUnit.DAYS);
+
+        return url.toString();
     }
 
     @Override

@@ -47,6 +47,8 @@
 		<google-cloud-storage.version>2.41.0</google-cloud-storage.version>
 		<firebase-admin.version>9.3.0</firebase-admin.version>
 
+		<minio.version>8.5.11</minio.version>
+
 		<jedis.version>5.1.4</jedis.version>
 		<javafaker.version>1.0.2</javafaker.version>
 	</properties>
@@ -120,6 +122,14 @@
 			<artifactId>firebase-admin</artifactId>
 			<version>${firebase-admin.version}</version>
 		</dependency>
+
+		<!--MINIO-->
+		<dependency>
+			<groupId>io.minio</groupId>
+			<artifactId>minio</artifactId>
+			<version>${minio.version}</version>
+		</dependency>
+
 
 		<!--ACTUATOR-->
 		<dependency>

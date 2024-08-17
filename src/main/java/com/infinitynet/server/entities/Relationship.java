@@ -1,13 +1,11 @@
 package com.infinitynet.server.entities;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.infinitynet.server.enums.RelationshipStatus;
+import com.infinitynet.server.enums.RelationshipType;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.util.List;
 
 @Getter
 @Setter
@@ -24,36 +22,22 @@ public class Relationship extends AbstractEntity {
     String id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", referencedColumnName = "id",
-            foreignKey = @ForeignKey(name = "fk_relationships_users",
-                    foreignKeyDefinition = "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false)
-    @JsonBackReference
-    User user;
-
-    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "related_user_id", referencedColumnName = "id",
-            foreignKey = @ForeignKey(name = "fk_related-user",
-                    foreignKeyDefinition = "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false)
+            foreignKey = @ForeignKey(name = "fk_related_user",
+                    foreignKeyDefinition = "FOREIGN KEY (related_user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false)
     @JsonBackReference
     User relatedUser;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "initated_by_user_id", referencedColumnName = "id",
-            foreignKey = @ForeignKey(name = "fk_initiated-by-user",
-                    foreignKeyDefinition = "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false)
+    @JoinColumn(name = "initiated_by_user_id", referencedColumnName = "id",
+            foreignKey = @ForeignKey(name = "fk_initiated_by_user",
+                    foreignKeyDefinition = "FOREIGN KEY (initiated_by_user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false)
     @JsonBackReference
-    User initatedByUser;
+    User initiatedByUser;
 
-    @ManyToOne
-    @JoinColumn(name = "relationship_type_id", referencedColumnName = "id",
-            foreignKey = @ForeignKey(name = "fk_relationships_relationship-types",
-                    foreignKeyDefinition = "FOREIGN KEY (relationship_type_id) REFERENCES relationship_types(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false)
-    @JsonManagedReference
+    @Column(name = "relationship_type", nullable = false)
+    @Enumerated(EnumType.STRING)
     RelationshipType relationshipType;
-
-    @OneToMany(mappedBy = "relationship", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    @JsonManagedReference
-    List<RelationshipHistory> relationshipHistories;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)

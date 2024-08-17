@@ -1,7 +1,6 @@
 package com.infinitynet.server.entities;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.infinitynet.server.enums.Gender;
 import jakarta.persistence.*;
 
@@ -10,7 +9,6 @@ import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Set;
 
 @Getter
 @Setter
@@ -73,9 +71,13 @@ public class User extends AbstractEntity {
     @JsonBackReference
     List<Setting> settings;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "createdBy", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonBackReference
     List<Event> events;
+
+    @OneToMany(mappedBy = "attendee", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonBackReference
+    List<EventAttendee> eventAttendees;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonBackReference
@@ -95,7 +97,15 @@ public class User extends AbstractEntity {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonBackReference
-    List<Relationship> relationships;
+    List<MessageEmoji> messageEmojis;
+
+    @OneToMany(mappedBy = "initiatedByUser", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonBackReference
+    List<Relationship> relationshipsWhereInitiatedBy;
+
+    @OneToMany(mappedBy = "relatedUser", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonBackReference
+    List<Relationship> relationshipsWhereRelated;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonBackReference
@@ -105,6 +115,14 @@ public class User extends AbstractEntity {
     @JsonBackReference
     List<PostReaction> postReactions;
 
+    @OneToMany(mappedBy = "mentionedUser", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonBackReference
+    List<PostMention> postMentions;
+
+    @OneToMany(mappedBy = "mentionedUser", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonBackReference
+    List<PostMentionEvent> postMentionEvents;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonBackReference
     List<Comment> comments;
@@ -112,6 +130,10 @@ public class User extends AbstractEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonBackReference
     List<CommentReaction> commentReactions;
+
+    @OneToMany(mappedBy = "mentionedUser", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonBackReference
+    List<CommentMentionEvent> commentMentionEvents;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonBackReference

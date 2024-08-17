@@ -5,6 +5,7 @@ import com.infinitynet.server.dtos.responses.FileResponse;
 import com.infinitynet.server.exceptions.file_storage.FileStorageException;
 import com.infinitynet.server.services.CloudStorageService;
 import com.infinitynet.server.services.LocalStorageService;
+import com.infinitynet.server.services.MinioClientService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -20,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.Date;
 import java.util.UUID;
 
+import static com.infinitynet.server.exceptions.file_storage.FileStorageErrorCode.CAN_NOT_STORE_FILE;
 import static com.infinitynet.server.exceptions.file_storage.FileStorageErrorCode.COULD_NOT_READ_FILE;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CREATED;
@@ -36,6 +38,8 @@ public class MediaController {
 
     CloudStorageService cloudStorageService;
 
+    MinioClientService minioClientService;
+
     @Operation(summary = "test", description = "test")
     @GetMapping("/test")
     ResponseEntity<?> test() {
@@ -46,20 +50,32 @@ public class MediaController {
 
     @Operation(summary = "Upload file", description = "Upload file")
     @PostMapping("/upload")
-    ResponseEntity<?> upload(@RequestPart(name = "file") MultipartFile file,
+    ResponseEntity<FileResponse> upload(@RequestPart(name = "file") MultipartFile file,
                                     @RequestPart(name = "request") @Valid FileUploadRequest request) {
-        String backupPath = localStorageService.storeFile(file, "tests", request.ownerId());
+        String backupPath = localStorageService.storeFile(file, "tests/" + request.ownerId());
 
-        String url = cloudStorageService.storeFile(file, "tests/" + request.ownerId());
+        cloudStorageService.storeFile(file, "tests/" + request.ownerId());
 
-        FileResponse response = FileResponse.builder()
-                .uuid(UUID.randomUUID().toString())
-                .url(url)
-                .backupPath(backupPath)
-                .type(file.getContentType())
-                .size(file.getSize())
-                .createdAt(new Date())
-                .build();
+        try {
+            minioClientService.storeObject(file, "tests/" + request.ownerId());
+        } catch (Exception e) {
+            throw new FileStorageException(CAN_NOT_STORE_FILE, BAD_REQUEST);
+        }
+
+        FileResponse response = null;
+        try {
+            response = FileResponse.builder()
+                    .uuid(UUID.randomUUID().toString())
+                    .url(minioClientService.getObjectUrl("tests/" + request.ownerId() + ".jpg"))
+                    .backupPath(backupPath)
+                    .type(file.getContentType())
+                    .size(file.getSize())
+                    .createdAt(new Date())
+                    .build();
+
+        } catch (Exception e) {
+            throw new FileStorageException(COULD_NOT_READ_FILE, BAD_REQUEST);
+        }
 
         return ResponseEntity.status(CREATED).body(response);
     }

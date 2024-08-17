@@ -34,8 +34,11 @@ public class LocalStorageServiceImpl implements LocalStorageService {
     }
 
     @Override
-    public String storeFile(MultipartFile file, String storageFolder, String fileName) {
-        Path pathToNewFolder = Paths.get(LOCAL_STORAGE_ROOT_FOLDER + "/" + storageFolder);
+    public String storeFile(MultipartFile file, String filePath) {
+        String[] fileNameParts = filePath.split("/");
+        String pathToFile = (fileNameParts.length > 1) ? "/" + fileNameParts[0] : "";
+        String fileName = fileNameParts[fileNameParts.length - 1];
+        Path pathToNewFolder = Paths.get(LOCAL_STORAGE_ROOT_FOLDER + pathToFile);
         createNewFolder(pathToNewFolder);
 
         if (file.isEmpty()) throw new FileStorageException(EMPTY_FILE, BAD_REQUEST);
@@ -62,7 +65,7 @@ public class LocalStorageServiceImpl implements LocalStorageService {
             throw new FileStorageException(CAN_NOT_STORE_FILE, BAD_REQUEST);
         }
 
-        return storageFolder + "/" + fileName + "." + fileExtension;
+        return pathToFile + "/" + fileName + "." + fileExtension;
     }
 
     @Override

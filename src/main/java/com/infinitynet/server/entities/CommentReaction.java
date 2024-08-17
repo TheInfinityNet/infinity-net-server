@@ -2,6 +2,7 @@ package com.infinitynet.server.entities;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.infinitynet.server.enums.ReactionType;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -24,7 +25,7 @@ public class CommentReaction extends AbstractEntity {
     @ManyToOne
     @MapsId("userId")
     @JoinColumn(name = "user_id", referencedColumnName = "id",
-            foreignKey = @ForeignKey(name = "fk_comment-reactions_users",
+            foreignKey = @ForeignKey(name = "fk_comment_reactions_users",
                     foreignKeyDefinition = "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false)
     @JsonManagedReference
     User user;
@@ -32,17 +33,13 @@ public class CommentReaction extends AbstractEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("commentId")
     @JoinColumn(name = "comment_id", referencedColumnName = "id",
-            foreignKey = @ForeignKey(name = "fk_comment-reactions_comments",
+            foreignKey = @ForeignKey(name = "fk_comment_reactions_comments",
                     foreignKeyDefinition = "FOREIGN KEY (comment_id) REFERENCES comments(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false)
     @JsonBackReference
     Comment comment;
 
-    @ManyToOne
-    @MapsId("reactionTypeId")
-    @JoinColumn(name = "reaction_type_id", referencedColumnName = "id",
-            foreignKey = @ForeignKey(name = "fk_comment-reactions_reaction-types",
-                    foreignKeyDefinition = "FOREIGN KEY (reaction_type_id) REFERENCES reaction_types(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false)
-    @JsonManagedReference
+    @Column(name = "reaction_type", nullable = false)
+    @Enumerated(EnumType.STRING)
     ReactionType reactionType;
 
     @Embeddable
@@ -58,9 +55,6 @@ public class CommentReaction extends AbstractEntity {
 
         @Column(name = "comment_id")
         String commentId;
-
-        @Column(name = "reaction_type_id")
-        String reactionTypeId;
 
     }
 

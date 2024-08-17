@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 @Service
 public interface LocalStorageService {
 
-    String storeFile(MultipartFile file, String storageFolder, String fileName);
+    String storeFile(MultipartFile file, String filePath);
 
     byte[] readFile(String filePath);
 

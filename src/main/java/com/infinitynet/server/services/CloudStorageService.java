@@ -8,7 +8,9 @@ import java.util.List;
 @Service
 public interface CloudStorageService {
 
-    String storeFile(MultipartFile file, String fileName);
+    void storeFile(MultipartFile file, String fileName);
+
+    String getFileUrl(String filePath);
 
     List<String> loadAllFromFolder(String folderPath);
 

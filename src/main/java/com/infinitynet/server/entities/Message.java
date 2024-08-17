@@ -1,12 +1,11 @@
 package com.infinitynet.server.entities;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.util.Set;
+import java.util.List;
 
 @Getter
 @Setter
@@ -41,10 +40,10 @@ public class Message extends AbstractEntity {
 
     @OneToMany(mappedBy = "message", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @JsonManagedReference
-    Set<MessageMedia> messageMedias;
+    List<MessageMedia> messageMedias;
 
     @OneToMany(mappedBy = "message", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @JsonManagedReference
-    Set<MessageEmoji> messageEmojis;
+    List<MessageEmoji> messageEmojis;
 
 }

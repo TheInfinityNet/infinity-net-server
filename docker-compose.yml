@@ -79,6 +79,19 @@ services:
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT
       - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
 
+  infinity_net_minio:
+    image: minio/minio:RELEASE.2024-08-17T01-24-54Z.fips
+    container_name: infinity_net_minio
+    ports:
+      - "9000:9000"
+      - "9001:9001" # Mở port này để truy cập Minio Console
+    volumes:
+      - infinity-net-minio-data:/data # Tạo volume để lưu trữ dữ liệu
+    environment:
+      MINIO_ROOT_USER: minioadmin # Thay đổi tên người dùng mặc định
+      MINIO_ROOT_PASSWORD: minioadmin # Thay đổi mật khẩu mặc định
+    command: server /data --console-address ":9001"
+
 networks:
   infinity-net:
     driver: bridge
@@ -89,3 +102,4 @@ volumes:
   postgres-init-db:
   infinity-net-redis-data:
   redis-insight-data:
+  infinity-net-minio-data:

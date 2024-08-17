@@ -10,6 +10,8 @@ import com.infinitynet.server.dtos.others.Tokens;
 import com.infinitynet.server.dtos.requests.authentication.*;
 import com.infinitynet.server.dtos.responses.authentication.*;
 import com.infinitynet.server.entities.User;
+import com.infinitynet.server.exceptions.authentication.AuthenticationErrorCode;
+import com.infinitynet.server.exceptions.authentication.AuthenticationException;
 import com.infinitynet.server.mappers.UserMapper;
 import com.infinitynet.server.services.AuthenticationService;
 import com.infinitynet.server.services.UserService;
@@ -30,8 +32,8 @@ import lombok.experimental.FieldDefaults;
 import static com.infinitynet.server.components.Translator.getLocalizedMessage;
 import static com.infinitynet.server.enums.RateLimitKeyType.BY_IP;
 import static com.infinitynet.server.enums.RateLimitKeyType.BY_TOKEN;
-import static org.springframework.http.HttpStatus.CREATED;
-import static org.springframework.http.HttpStatus.OK;
+import static com.infinitynet.server.exceptions.authentication.AuthenticationErrorCode.INVALID_SIGNATURE;
+import static org.springframework.http.HttpStatus.*;
 
 @RestController
 @RequestMapping("${api.prefix}/auth")
@@ -60,7 +62,8 @@ public class AuthenticationController {
 
     @Operation(summary = "Send email verification", description = "Send email verification")
     @PostMapping("/send-email-verification")
-    ResponseEntity<SendEmailVerificationResponse> sendEmailVerification(@RequestBody @Valid SendEmailVerificationRequest request) {
+    ResponseEntity<SendEmailVerificationResponse> sendEmailVerification(
+            @RequestBody @Valid SendEmailVerificationRequest request) {
         authenticationService.sendEmailVerification(request.email(), request.type());
 
         return ResponseEntity.status(OK).body(
@@ -108,8 +111,17 @@ public class AuthenticationController {
     @PostMapping("/refresh")
     @RateLimit(limitKeyTypes = { BY_TOKEN })
     ResponseEntity<RefreshResponse> refresh(@RequestBody @Valid RefreshRequest request,
-                              HttpServletRequest httpServletRequest) throws ParseException, JOSEException {
-        User user = authenticationService.refresh(request.refreshToken(), httpServletRequest);
+                                            HttpServletRequest httpServletRequest) {
+        User user = null;
+        try {
+            user = authenticationService.refresh(request.refreshToken(), httpServletRequest);
+
+        } catch (ParseException e) {
+            throw new AuthenticationException(INVALID_SIGNATURE, UNPROCESSABLE_ENTITY);
+
+        } catch (JOSEException e) {
+            throw new AuthenticationException(INVALID_SIGNATURE, UNPROCESSABLE_ENTITY);
+        }
 
         String newAccessToken = authenticationService.generateToken(user, false);
 
@@ -121,8 +133,16 @@ public class AuthenticationController {
 
     @Operation(summary = "Sign out", description = "Sign out user")
     @PostMapping("/sign-out")
-    void signOut(@RequestBody @Valid SignOutRequest request) throws ParseException, JOSEException {
-        authenticationService.signOut(request.accessToken(), request.refreshToken());
+    void signOut(@RequestBody @Valid SignOutRequest request) {
+        try {
+            authenticationService.signOut(request.accessToken(), request.refreshToken());
+
+        } catch (ParseException e) {
+            throw new AuthenticationException(INVALID_SIGNATURE, UNPROCESSABLE_ENTITY);
+
+        } catch (JOSEException e) {
+            throw new AuthenticationException(INVALID_SIGNATURE, UNPROCESSABLE_ENTITY);
+        }
     }
 
     @Operation(summary = "Send email forgot password", description = "Send email forgot password")

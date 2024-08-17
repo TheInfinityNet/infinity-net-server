@@ -6,7 +6,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.util.Set;
+import java.util.List;
 
 @Getter
 @Setter
@@ -41,14 +41,14 @@ public class Comment extends AbstractEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_comment_id", referencedColumnName = "id",
-            foreignKey = @ForeignKey(name = "fk_parent-comment",
+            foreignKey = @ForeignKey(name = "fk_parent_comment",
                     foreignKeyDefinition = "FOREIGN KEY (parent_comment_id) REFERENCES users(id) ON DELETE CASCADE"))
     @JsonBackReference
     Comment parentComment;
 
     @OneToMany(mappedBy = "parentComment", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @JsonManagedReference
-    Set<Comment> subComments;
+    List<Comment> subComments;
 
     @OneToOne(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @JsonManagedReference
@@ -56,6 +56,6 @@ public class Comment extends AbstractEntity {
 
     @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @JsonManagedReference
-    Set<CommentReaction> commentReactions;
+    List<CommentReaction> commentReactions;
 
 }

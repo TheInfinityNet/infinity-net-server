@@ -1,11 +1,14 @@
 package com.infinitynet.server.services.impls;
 
+import com.github.javafaker.Faker;
 import com.infinitynet.server.dtos.responses.UserInfoResponse;
 import com.infinitynet.server.entities.User;
+import com.infinitynet.server.enums.Gender;
 import com.infinitynet.server.exceptions.authentication.AuthenticationException;
 import com.infinitynet.server.mappers.UserMapper;
 import com.infinitynet.server.repositories.UserRepository;
 import com.infinitynet.server.services.UserService;
+import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +17,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.infinitynet.server.exceptions.authentication.AuthenticationErrorCode.USER_NOT_FOUND;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
@@ -29,6 +36,8 @@ public class UserServiceImpl implements UserService {
 
     UserMapper userMapper = UserMapper.INSTANCE;
 
+    PasswordEncoder passwordEncoder;
+
 //    @PostConstruct
 //    public void generateAndSaveFakeUsers() {
 //        Faker faker = new Faker();
@@ -38,7 +47,11 @@ public class UserServiceImpl implements UserService {
 //            String password = passwordEncoder.encode(email);
 //            User user = new User();
 //            user.setEmail(email);
+//            user.setUserName(faker.name().username());
 //            user.setPassword(password);
+//            user.setFirstName(faker.name().firstName());
+//            user.setLastName(faker.name().lastName());
+//            user.setGender(Gender.OTHER);
 //            users.add(user);
 //        }
 //        userRepository.saveAll(users);

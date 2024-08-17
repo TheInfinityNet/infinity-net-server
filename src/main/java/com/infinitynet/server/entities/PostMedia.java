@@ -9,28 +9,19 @@ import lombok.experimental.FieldDefaults;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
 @Entity
 @FieldDefaults(level=AccessLevel.PRIVATE)
 @Table(name = "post_medias")
-public class PostMedia extends AbstractEntity {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    String id;
-
-    @Column(nullable = false)
-    String url;
-
-    @Column(name = "backup_url", nullable = false)
-    String backupUrl;
-
-    @Column(nullable = false)
-    String mediaType;
+@PrimaryKeyJoinColumn(name = "id",
+        foreignKey = @ForeignKey(
+                name = "fk_post_medias_file_metadata",
+                foreignKeyDefinition = "FOREIGN KEY (id) REFERENCES file_metadata(id) ON DELETE CASCADE ON UPDATE CASCADE")
+)
+public class PostMedia extends FileMetadata {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id", referencedColumnName = "id",
-            foreignKey = @ForeignKey(name = "fk_post-medias_posts",
+            foreignKey = @ForeignKey(name = "fk_post_medias_posts",
                     foreignKeyDefinition = "FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE"), nullable = false)
     @JsonBackReference
     Post post;

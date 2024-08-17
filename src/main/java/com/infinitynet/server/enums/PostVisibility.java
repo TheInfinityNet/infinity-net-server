@@ -1,6 +1,6 @@
 package com.infinitynet.server.enums;
 
-public enum PostVisibilityName {
+public enum PostVisibility {
 
     PUBLIC,
 

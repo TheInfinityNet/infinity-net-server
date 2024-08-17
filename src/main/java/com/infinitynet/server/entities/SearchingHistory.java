@@ -21,7 +21,7 @@ public class SearchingHistory extends AbstractEntity {
 
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id",
-            foreignKey = @ForeignKey(name = "fk_searching-histories_users",
+            foreignKey = @ForeignKey(name = "fk_searching_histories_users",
                     foreignKeyDefinition = "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false)
     @JsonManagedReference
     User user;

@@ -1,6 +1,6 @@
 package com.infinitynet.server.enums;
 
-public enum RelationshipTypeName {
+public enum RelationshipType {
 
         FRIEND,
 

@@ -32,4 +32,11 @@ public class Notification extends AbstractEntity {
     @JsonManagedReference
     User user;
 
+    @OneToOne
+    @JoinColumn(name = "event_id", referencedColumnName = "id",
+            foreignKey = @ForeignKey(name = "fk_notifications_events",
+                    foreignKeyDefinition = "FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false)
+    @JsonManagedReference
+    Event event;
+
 }

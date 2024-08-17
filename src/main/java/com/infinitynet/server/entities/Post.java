@@ -2,6 +2,7 @@ package com.infinitynet.server.entities;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.infinitynet.server.enums.PostVisibility;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -16,6 +17,7 @@ import java.util.Set;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
 @Table(name = "posts")
+@Inheritance(strategy = InheritanceType.JOINED)
 public class Post extends AbstractEntity {
 
     @Id
@@ -25,6 +27,10 @@ public class Post extends AbstractEntity {
     @Column
     String content;
 
+    @Column(name = "post_visibility", nullable = false)
+    @Enumerated(EnumType.STRING)
+    PostVisibility postVisibility;
+
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "fk_posts_users",
@@ -32,12 +38,9 @@ public class Post extends AbstractEntity {
     @JsonManagedReference
     User user;
 
-    @ManyToOne
-    @JoinColumn(name = "visibility_id", referencedColumnName = "id",
-            foreignKey = @ForeignKey(name = "FK_posts_post-visibilities",
-                    foreignKeyDefinition = "FOREIGN KEY (visibility_id) REFERENCES post_visibilities(id) ON DELETE CASCADE"), nullable = false)
-    @JsonManagedReference
-    PostVisibility postVisibility;
+    @OneToMany(mappedBy = "parentPost", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonBackReference
+    Set<SharedPost> sharedPosts;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonBackReference
@@ -53,6 +56,14 @@ public class Post extends AbstractEntity {
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @JsonManagedReference
-    Set<PostTag> postTags;
+    Set<PostMention> postMentions;
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonBackReference
+    Set<PostMentionEvent> postMentionEvents;
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonBackReference
+    Set<PostReactionEvent> postReactionEvents;
 
 }
