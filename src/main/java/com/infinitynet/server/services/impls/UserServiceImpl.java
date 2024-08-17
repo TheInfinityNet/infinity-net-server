@@ -1,6 +1,7 @@
 package com.infinitynet.server.services.impls;
 
 import com.github.javafaker.Faker;
+import com.infinitynet.server.dtos.responses.FriendInforResponse;
 import com.infinitynet.server.dtos.responses.UserInfoResponse;
 import com.infinitynet.server.entities.User;
 import com.infinitynet.server.enums.Gender;
@@ -14,12 +15,15 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,27 +39,55 @@ public class UserServiceImpl implements UserService {
     UserRepository userRepository;
 
     UserMapper userMapper = UserMapper.INSTANCE;
-
-    PasswordEncoder passwordEncoder;
-
+//     Generate fake data
 //    @PostConstruct
 //    public void generateAndSaveFakeUsers() {
+//        PasswordEncoder passwordEncoder = new PasswordEncoder() {
+//            @Override
+//            public String encode(CharSequence rawPassword) {
+//                return rawPassword.toString();
+//            }
+//
+//            @Override
+//            public boolean matches(CharSequence rawPassword, String encodedPassword) {
+//                return rawPassword.toString().equals(encodedPassword);
+//            }
+//        };
 //        Faker faker = new Faker();
 //        List<User> users = new ArrayList<>();
-//        for (int i = 0; i < 10; i++) { // Generate 10 fake users
+//        for (int i = 0; i < 20; i++) { // Generate 10 fake users
 //            String email = faker.internet().emailAddress();
 //            String password = passwordEncoder.encode(email);
 //            User user = new User();
 //            user.setEmail(email);
 //            user.setUserName(faker.name().username());
 //            user.setPassword(password);
+//            user.setUserName(faker.name().username());
 //            user.setFirstName(faker.name().firstName());
 //            user.setLastName(faker.name().lastName());
-//            user.setGender(Gender.OTHER);
+//            user.setMiddleName(faker.name().lastName());
+//            user.setMobileNumber(faker.phoneNumber().cellPhone());
+//            user.setBirthdate(LocalDate.now().minusYears(faker.number().numberBetween(18, 60)) );
+//            user.setGender(Gender.values()[faker.number().numberBetween(0, 2)]);
+//            user.setActivated(true);
+//            user.setAvatar(faker.internet().avatar());
+//            user.setAcceptTerms(true);
+//            user.setBio(faker.lorem().sentence());
+//            user.setCover(faker.internet().image());
 //            users.add(user);
+//
 //        }
 //        userRepository.saveAll(users);
 //    }
+
+    @Override
+    public List<FriendInforResponse> getFriends(String userId, int offset, int limit) {
+        Pageable pageable = PageRequest.of(offset/limit, limit);
+
+        return userRepository.findAllById(userId, pageable).stream()
+                .map(userMapper::toFriendInforResponse)
+                .toList();
+    }
 
     @Override
     @PostAuthorize("returnObject.email == authentication.name") // CHECK OWNER
@@ -68,10 +100,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserInfoResponse getUserInfo(String userId) {
-
         User user = userRepository.findById(userId).orElseThrow(() ->
                 new AuthenticationException(USER_NOT_FOUND, NOT_FOUND));
-
         return userMapper.toUserInfoResponse(user);
     }
 

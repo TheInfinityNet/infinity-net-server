@@ -109,7 +109,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         try {
             userService.createUser(user);
-
         } catch (DataIntegrityViolationException exception) {
             throw new AuthenticationException(EMAIL_ALREADY_IN_USE, CONFLICT);
         }

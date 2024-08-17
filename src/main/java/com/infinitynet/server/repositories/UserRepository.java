@@ -1,6 +1,8 @@
 package com.infinitynet.server.repositories;
 
 import com.infinitynet.server.entities.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -14,4 +16,6 @@ public interface UserRepository extends JpaRepository<User, String> {
     Optional<User> findByEmail(String email);
 
     Optional<User> findByUserName(String username);
+
+    Page<User> findAllById(String id, Pageable pageable);
 }
