@@ -1,9 +1,14 @@
 package com.infinitynet.server.services;
 
+import com.infinitynet.server.dtos.responses.FriendInforResponse;
 import com.infinitynet.server.dtos.responses.UserInfoResponse;
 import com.infinitynet.server.entities.User;
 
+import java.util.List;
+
 public interface UserService {
+
+    List<FriendInforResponse> getFriends(String userId, int offset, int limit);
 
     UserInfoResponse getMyInfo();
 

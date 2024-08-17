@@ -1,6 +1,7 @@
 package com.infinitynet.server.mappers;
 
 import com.infinitynet.server.dtos.requests.authentication.SignUpRequest;
+import com.infinitynet.server.dtos.responses.FriendInforResponse;
 import com.infinitynet.server.dtos.responses.UserInfoResponse;
 import com.infinitynet.server.entities.User;
 import org.mapstruct.Mapper;
@@ -15,4 +16,5 @@ public interface UserMapper {
 
     UserInfoResponse toUserInfoResponse(User user);
 
+    FriendInforResponse toFriendInforResponse(User user);
 }
