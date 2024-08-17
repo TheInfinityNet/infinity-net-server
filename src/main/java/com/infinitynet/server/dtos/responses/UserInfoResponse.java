@@ -1,10 +1,10 @@
 package com.infinitynet.server.dtos.responses;
 
+import com.infinitynet.server.enums.Gender;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
-import java.util.Date;
 
 @Data
 @NoArgsConstructor
@@ -15,14 +15,6 @@ public class UserInfoResponse {
 
     String id;
 
-    String avatar;
-
-    String cover;
-
-    String email;
-
-    String bio;
-
     String userName;
 
     String firstName;
@@ -30,13 +22,5 @@ public class UserInfoResponse {
     String lastName;
 
     String middleName;
-
-    String mobileNumber;
-
-    LocalDate birthDate;
-
-    boolean acceptTerms;
-
-    String gender;
 
 }

@@ -16,7 +16,7 @@ public interface AuthenticationService {
 
     boolean introspect(String token) throws JOSEException, ParseException;
 
-    void signUp(User user, String confirmationPassword);
+    void signUp(User user, String confirmationPassword, boolean acceptTerms);
 
     void sendEmailVerification(String email, VerificationType verificationType);
 

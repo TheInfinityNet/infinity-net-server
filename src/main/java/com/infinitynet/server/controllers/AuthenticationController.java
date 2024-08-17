@@ -52,7 +52,7 @@ public class AuthenticationController {
     ResponseEntity<SignUpResponse> signUp(@RequestBody @Valid SignUpRequest request) {
         User user = userMapper.toUser(request);
 
-        authenticationService.signUp(user, request.passwordConfirmation());
+        authenticationService.signUp(user, request.passwordConfirmation(), request.acceptTerms());
 
         return ResponseEntity.status(CREATED).body(
                 new SignUpResponse(getLocalizedMessage("sign_up_success")));

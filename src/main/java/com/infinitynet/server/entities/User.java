@@ -1,6 +1,7 @@
 package com.infinitynet.server.entities;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.infinitynet.server.enums.Gender;
 import jakarta.persistence.*;
 
@@ -9,6 +10,7 @@ import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -19,13 +21,6 @@ import java.util.List;
 @Entity
 @Table(name = "users")
 public class User extends AbstractEntity {
-/*
-    Search history  Done
-    Message         Done
-    Setting         Done
-    Relationship    Done
-    Notification    Done
- */
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;

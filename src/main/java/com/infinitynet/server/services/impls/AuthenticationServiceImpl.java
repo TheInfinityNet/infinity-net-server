@@ -38,7 +38,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-import static com.infinitynet.server.components.Translator.getLocalizedMessage;
 import static com.infinitynet.server.Constants.*;
 import static com.infinitynet.server.exceptions.authentication.AuthenticationErrorCode.*;
 import static org.springframework.http.HttpStatus.*;
@@ -90,7 +89,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public void signUp(User user, String confirmationPassword) {
+    public void signUp(User user, String confirmationPassword, boolean acceptTerms) {
         if (userService.existsByEmail(user.getEmail()))
             throw new AuthenticationException(EMAIL_ALREADY_IN_USE, CONFLICT);
 
@@ -103,7 +102,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         if (isWeakPassword(user.getPassword()))
             throw new AuthenticationException(WEAK_PASSWORD, BAD_REQUEST);
 
-        if (isTermsNotAccepted())
+        if (!acceptTerms)
             throw new AuthenticationException(TERMS_NOT_ACCEPTED, BAD_REQUEST);
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -414,10 +413,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     private boolean isUserDisabled(User user) {
-        return false;
-    }
-
-    private boolean isTermsNotAccepted() {
         return false;
     }
 
