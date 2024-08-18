@@ -65,12 +65,12 @@ public class LocalStorageServiceImpl implements LocalStorageService {
             throw new FileStorageException(CAN_NOT_STORE_FILE, BAD_REQUEST);
         }
 
-        return pathToFile + "/" + fileName + "." + fileExtension;
+        return (pathToFile + "/" + fileName + "." + fileExtension).substring(1);
     }
 
     @Override
-    public byte[] readFile(String imagePath) {
-        Path file = Paths.get(imagePath);
+    public InputStream readFile(String filePath) {
+        Path file = Paths.get(LOCAL_STORAGE_ROOT_FOLDER + "/" + filePath);
         Resource resource = null;
         try {
             resource = new UrlResource(file.toUri());
@@ -81,15 +81,15 @@ public class LocalStorageServiceImpl implements LocalStorageService {
 
         if (resource.exists() || resource.isReadable()) {
             try {
-                return StreamUtils.copyToByteArray(resource.getInputStream());
+                return resource.getInputStream();
 
             } catch (IOException e) {
                 FileStorageException fileStorageException = new FileStorageException(COULD_NOT_READ_FILE, BAD_REQUEST);
-                fileStorageException.setMoreInfo(new Object[]{ imagePath });
+                fileStorageException.setMoreInfo(new Object[]{ filePath });
                 throw fileStorageException;
             }
 
-        } else throw new FileStorageException(COULD_NOT_READ_FILE, BAD_REQUEST);
+        } else throw new FileStorageException(FILE_NOT_FOUND, BAD_REQUEST);
 
     }
 

@@ -14,13 +14,13 @@ public class FileResponse {
 
     String uuid;
 
-    String url;
+    String objectKey;
 
     String backupPath;
 
     String type;
 
-    double size; // in bytes
+    long size; // in bytes
 
     Date createdAt;
 

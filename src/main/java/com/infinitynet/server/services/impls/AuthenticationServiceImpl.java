@@ -33,13 +33,15 @@ import javax.crypto.spec.SecretKeySpec;
 import java.security.SecureRandom;
 import java.text.ParseException;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
 import static com.infinitynet.server.Constants.*;
+import static com.infinitynet.server.enums.VerificationType.*;
 import static com.infinitynet.server.exceptions.authentication.AuthenticationErrorCode.*;
+import static java.time.temporal.ChronoUnit.MINUTES;
+import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.springframework.http.HttpStatus.*;
 
 @Service
@@ -121,8 +123,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         List<Verification> verifications = verificationRepository.findByUserAndVerificationType(user, verificationType);
 
-        if (verificationType.equals(VerificationType.VERIFY_EMAIL_BY_CODE)
-                || verificationType.equals(VerificationType.VERIFY_EMAIL_BY_TOKEN)) {
+        if (verificationType.equals(VERIFY_EMAIL_BY_CODE) || verificationType.equals(VERIFY_EMAIL_BY_TOKEN)) {
             if (user.isActivated())
                 throw new AuthenticationException(USER_ALREADY_VERIFIED, BAD_REQUEST);
 
@@ -187,8 +188,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         JWSHeader refreshHeader = new JWSHeader(REFRESH_TOKEN_SIGNATURE_ALGORITHM);
 
         Date expiryTime = (isRefresh)
-                ? new Date(Instant.now().plus(REFRESHABLE_DURATION, ChronoUnit.SECONDS).toEpochMilli())
-                : new Date(Instant.now().plus(VALID_DURATION, ChronoUnit.SECONDS).toEpochMilli());
+                ? new Date(Instant.now().plus(REFRESHABLE_DURATION, SECONDS).toEpochMilli())
+                : new Date(Instant.now().plus(VALID_DURATION, SECONDS).toEpochMilli());
 
         String jwtID = UUID.randomUUID().toString();
 
@@ -261,7 +262,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     @Transactional
     public void sendEmailForgotPassword(String email) {
-        sendEmail(email, VerificationType.RESET_PASSWORD);
+        sendEmail(email, RESET_PASSWORD);
     }
 
     @Override
@@ -332,7 +333,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         Verification verification = verificationRepository.save(Verification.builder()
                 .code(generateVerificationCode(6))
-                .expiryTime(Date.from(Instant.now().plus(3, ChronoUnit.MINUTES)))
+                .expiryTime(Date.from(Instant.now().plus(3, MINUTES)))
                 .verificationType(verificationType)
                 .user(user)
                 .build());

@@ -15,12 +15,13 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import static com.infinitynet.server.Utils.isMedia;
 import static com.infinitynet.server.exceptions.file_storage.FileStorageErrorCode.*;
+import static java.util.concurrent.TimeUnit.HOURS;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 @Service
@@ -51,13 +52,19 @@ public class CloudStorageServiceImpl implements CloudStorageService {
     }
 
     @Override
+    public void storeFile(InputStream file, String contentType, String filePath) {
+        Bucket bucket = StorageClient.getInstance().bucket();
+        bucket.create(filePath, file, contentType);
+    }
+
+    @Override
     public String getFileUrl(String filePath) {
         Bucket bucket = StorageClient.getInstance().bucket();
         Blob blob = bucket.get(filePath);
 
         if (blob == null) throw new FileStorageException(COULD_NOT_READ_FILE, BAD_REQUEST);
 
-        URL url = blob.signUrl(365 * 100, TimeUnit.DAYS);
+        URL url = blob.signUrl(1, HOURS);
 
         return url.toString();
     }
@@ -72,7 +79,7 @@ public class CloudStorageServiceImpl implements CloudStorageService {
         List<String> urls = new ArrayList<>();
         for (Blob blob : blobs) {
             // Lấy URI của blob
-            String url = blob.signUrl(365 * 100, TimeUnit.DAYS).toString();
+            String url = blob.signUrl(1, HOURS).toString();
             urls.add(url);
         }
 

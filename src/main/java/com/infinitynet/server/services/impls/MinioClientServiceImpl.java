@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import io.minio.messages.Item;
 
@@ -37,6 +39,7 @@ public class MinioClientServiceImpl implements MinioClientService {
             .build();
     }
 
+    @Override
     public void storeObject(MultipartFile file, String objectKey) throws Exception {
         if (file.isEmpty()) throw new FileStorageException(EMPTY_FILE, BAD_REQUEST);
 
@@ -55,6 +58,22 @@ public class MinioClientServiceImpl implements MinioClientService {
                 .stream(inputStream, file.getSize(), -1)
                 .contentType(file.getContentType())
                 .build());
+
+        } catch (MinioException e) {
+            throw new FileStorageException(CAN_NOT_STORE_FILE, BAD_REQUEST);
+        }
+    }
+
+    @Override
+    public void storeObject(InputStream file, long size, String contentType, String objectKey) throws Exception {
+        try {
+            minioClient.putObject(PutObjectArgs.builder()
+                    .bucket(bucketName)
+                    .object(objectKey)
+                    .stream(file, size, -1)
+                    .contentType(contentType)
+                    .build());
+
         } catch (MinioException e) {
             throw new FileStorageException(CAN_NOT_STORE_FILE, BAD_REQUEST);
         }
@@ -74,6 +93,30 @@ public class MinioClientServiceImpl implements MinioClientService {
         }
     }
 
+    @Override
+    public List<String> loadAllFromParent(String parentKey) throws Exception {
+        try {
+            Iterable<Result<Item>> results = minioClient.listObjects(
+                    ListObjectsArgs.builder()
+                            .bucket(bucketName)
+                            .prefix(parentKey)
+                            .recursive(true)
+                            .build()
+            );
+
+            List<String> objectKeys = new ArrayList<>();
+            for (Result<Item> result : results) {
+                Item item = result.get();
+                objectKeys.add(getObjectUrl(item.objectName()));
+            }
+
+            return objectKeys;
+        } catch (MinioException e) {
+            throw new FileStorageException(COULD_NOT_READ_FILE, BAD_REQUEST);
+        }
+    }
+
+    @Override
     public void deleteObject(String objectKey) throws Exception {
         GetObjectResponse response = minioClient.getObject(GetObjectArgs.builder()
                 .bucket(bucketName)
@@ -92,6 +135,7 @@ public class MinioClientServiceImpl implements MinioClientService {
         }
     }
 
+    @Override
     public void deleteParentObject(String parentKey) throws Exception {
         try {
             Iterable<Result<Item>> results = minioClient.listObjects(

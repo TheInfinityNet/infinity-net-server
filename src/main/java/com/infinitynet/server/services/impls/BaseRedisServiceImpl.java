@@ -8,7 +8,7 @@ import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.concurrent.TimeUnit;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 @Service
 @RequiredArgsConstructor
@@ -26,7 +26,7 @@ public class BaseRedisServiceImpl<K, F, V> implements BaseRedisService<K, F, V> 
 
     @Override
     public void setTimeToLive(K key, long timeoutInDays) {
-        redisTemplate.expire(key, timeoutInDays, TimeUnit.MILLISECONDS);
+        redisTemplate.expire(key, timeoutInDays, MILLISECONDS);
     }
 
     @Override

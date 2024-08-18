@@ -16,6 +16,8 @@ public class Constants {
 
     public static final String KAFKA_TOPIC_SEND_MAIL = "SEND_MAIL";
 
+    public static final String KAFKA_TOPIC_HANDLE_MEDIA = "HANDLE_MEDIA";
+
     public static final String DEFAULT_MAIL_HEADERS_MAILIN_CUSTOM =
             "custom_header_1:custom_value_1|custom_header_2:custom_value_2|custom_header_3:custom_value_3";
 

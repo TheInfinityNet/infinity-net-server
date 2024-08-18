@@ -51,6 +51,7 @@
 
 		<jedis.version>5.1.4</jedis.version>
 		<javafaker.version>1.0.2</javafaker.version>
+		<jakarta.validation.version>3.0.2</jakarta.validation.version>
 	</properties>
 
 	<dependencies>
@@ -130,7 +131,6 @@
 			<version>${minio.version}</version>
 		</dependency>
 
-
 		<!--ACTUATOR-->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -151,7 +151,7 @@
 			<scope>runtime</scope>
 		</dependency>
 
-		<!--Lombok-->
+		<!--LOMBOK-->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
@@ -195,10 +195,12 @@
 			<scope>runtime</scope>
 			<optional>true</optional>
 		</dependency>
+
+		<!--JAKARTA VALIDATION-->
         <dependency>
             <groupId>jakarta.validation</groupId>
             <artifactId>jakarta.validation-api</artifactId>
-            <version>3.0.2</version>
+            <version>${jakarta.validation.version}</version>
         </dependency>
     </dependencies>
 

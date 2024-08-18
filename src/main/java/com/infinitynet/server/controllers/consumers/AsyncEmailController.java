@@ -23,11 +23,11 @@ import static com.infinitynet.server.enums.VerificationType.VERIFY_EMAIL_BY_CODE
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
-public class EmailController {
+public class AsyncEmailController {
 
     EmailService emailService;
 
-    @KafkaListener(topics = KAFKA_TOPIC_SEND_MAIL)
+    @KafkaListener(topics = KAFKA_TOPIC_SEND_MAIL, groupId = "${spring.kafka.mail-consumer.group-id}")
     public void listenNotificationDelivery(String message) {
         String type = message.split(":")[0];
         String email = message.split(":")[1];

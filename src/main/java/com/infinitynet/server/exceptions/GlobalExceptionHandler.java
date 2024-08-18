@@ -93,12 +93,12 @@ public class GlobalExceptionHandler {
 
                 } default -> errors = null;
             };
-        }catch (NoSuchMessageException exception1) {
+
+        } catch (NoSuchMessageException exception1) {
             ApiResponse<?> apiResponse1 = new ApiResponse<>();
             apiResponse1.setMessage(getLocalizedMessage("no_such_message"));
             return ResponseEntity.badRequest().body(apiResponse1);
         }
-
 
         apiResponse.setErrors(errors);
 
@@ -137,6 +137,7 @@ public class GlobalExceptionHandler {
                     new ApiResponse<>(VALIDATION_ERROR.getCode(),
                             getLocalizedMessage(VALIDATION_ERROR.getMessage()), null, errors)
             );
+
         } catch (NoSuchMessageException exception) {
             ApiResponse<?> apiResponse = new ApiResponse<>();
             apiResponse.setMessage(getLocalizedMessage("no_such_message"));
