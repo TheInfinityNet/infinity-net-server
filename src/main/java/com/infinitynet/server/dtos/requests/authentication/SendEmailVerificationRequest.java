@@ -1,6 +1,5 @@
 package com.infinitynet.server.dtos.requests.authentication;
 
-import com.infinitynet.server.entities.Verification;
 import com.infinitynet.server.enums.VerificationType;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

@@ -36,8 +36,9 @@ public class LocalStorageServiceImpl implements LocalStorageService {
     @Override
     public String storeFile(MultipartFile file, String filePath) {
         String[] fileNameParts = filePath.split("/");
-        String pathToFile = (fileNameParts.length > 1) ? "/" + fileNameParts[0] : "";
         String fileName = fileNameParts[fileNameParts.length - 1];
+        String pathToFile = (fileNameParts.length > 1)
+                ? "/" + filePath.replace("/" + fileName, "") : "";
         Path pathToNewFolder = Paths.get(LOCAL_STORAGE_ROOT_FOLDER + pathToFile);
         createNewFolder(pathToNewFolder);
 
