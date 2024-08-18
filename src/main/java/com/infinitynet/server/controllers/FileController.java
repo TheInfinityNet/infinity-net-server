@@ -53,7 +53,6 @@ public class FileController {
         return ResponseEntity.status(CREATED).body(FileResponse.builder()
                 .uuid(UUID.randomUUID().toString())
                 .objectKey(backupPath)
-                .backupPath(backupPath)
                 .type(file.getContentType())
                 .size(file.getSize())
                 .createdAt(new Date())

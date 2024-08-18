@@ -47,7 +47,9 @@ public class SecurityConfiguration {
                 "/actuator/health",
                 "/api-docs/**",
                 "/swagger-ui/**",
-                "/swagger-ui.html"
+                "/swagger-ui.html",
+                "/swagger-resources/**",
+                "/media/**"
 
         ).map(s -> (
                 s.contains("api-docs") ||
@@ -62,8 +64,8 @@ public class SecurityConfiguration {
             request.requestMatchers(PUBLIC_ENDPOINTS)
                     .permitAll()
                     .anyRequest()
-                    .permitAll();
-//                    .authenticated();
+//                    .permitAll();
+                    .authenticated();
 
             log.info("Request: {}", request);
         });

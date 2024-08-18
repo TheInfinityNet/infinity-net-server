@@ -7,7 +7,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.util.Set;
+import java.util.List;
 
 @Getter
 @Setter
@@ -24,7 +24,7 @@ public class Post extends AbstractEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;
 
-    @Column
+    @Column(nullable = false)
     String content;
 
     @Column(name = "post_visibility", nullable = false)
@@ -40,30 +40,30 @@ public class Post extends AbstractEntity {
 
     @OneToMany(mappedBy = "parentPost", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonBackReference
-    Set<SharedPost> sharedPosts;
+    List<SharedPost> sharedPosts;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonBackReference
-    Set<Comment> comments;
+    List<Comment> comments;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @JsonManagedReference
-    Set<PostMedia> postMedias;
+    List<PostMedia> postMedias;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @JsonManagedReference
-    Set<PostReaction> postReactions;
+    List<PostReaction> postReactions;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @JsonManagedReference
-    Set<PostMention> postMentions;
+    List<PostMention> postMentions;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonBackReference
-    Set<PostMentionEvent> postMentionEvents;
+    List<PostMentionEvent> postMentionEvents;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonBackReference
-    Set<PostReactionEvent> postReactionEvents;
+    List<PostReactionEvent> postReactionEvents;
 
 }

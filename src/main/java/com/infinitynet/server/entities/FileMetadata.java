@@ -6,7 +6,6 @@ import lombok.experimental.FieldDefaults;
 
 @Getter
 @Setter
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -22,13 +21,10 @@ public class FileMetadata extends AbstractEntity {
     @Column(name = "object_key", nullable = false)
     String objectKey;
 
-    @Column(name = "backup_url", nullable = false)
-    String backupUrl;
-
     @Column(name = "media_type", nullable = false)
     String mediaType;
 
     @Column(nullable = false)
-    double size;
+    long size;
 
 }

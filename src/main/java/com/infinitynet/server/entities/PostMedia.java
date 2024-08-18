@@ -10,7 +10,7 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@FieldDefaults(level=AccessLevel.PRIVATE)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @Table(name = "post_medias")
 @PrimaryKeyJoinColumn(name = "id",
         foreignKey = @ForeignKey(
@@ -18,6 +18,11 @@ import lombok.experimental.FieldDefaults;
                 foreignKeyDefinition = "FOREIGN KEY (id) REFERENCES file_metadata(id) ON DELETE CASCADE ON UPDATE CASCADE")
 )
 public class PostMedia extends FileMetadata {
+
+    public PostMedia(String id, String objectKey, String mediaType, long size, Post post) {
+        super(id, objectKey, mediaType, size);
+        this.post = post;
+    }
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id", referencedColumnName = "id",
