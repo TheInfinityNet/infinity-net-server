@@ -1,10 +1,7 @@
 package com.infinitynet.server.dtos.responses;
 
-import com.infinitynet.server.enums.Gender;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.time.LocalDate;
 
 @Data
 @NoArgsConstructor

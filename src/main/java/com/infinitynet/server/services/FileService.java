@@ -7,9 +7,9 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @Service
-public interface FileService<P, M> {
+public interface FileService<O, M> {
 
-    void uploadFiles(P owner, MediaOwnerType type, List<MultipartFile> files);
+    void uploadFiles(O owner, MediaOwnerType type, List<MultipartFile> files);
 
     void deleteFile(String fileId);
 

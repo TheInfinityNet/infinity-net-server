@@ -51,6 +51,7 @@ public class AuthenticationController {
 
     @Operation(summary = "Sign up", description = "Create new user")
     @PostMapping("/sign-up")
+    @ResponseStatus(CREATED)
     ResponseEntity<SignUpResponse> signUp(@RequestBody @Valid SignUpRequest request) {
         User user = userMapper.toUser(request);
 
@@ -62,6 +63,7 @@ public class AuthenticationController {
 
     @Operation(summary = "Send email verification", description = "Send email verification")
     @PostMapping("/send-email-verification")
+    @ResponseStatus(OK)
     ResponseEntity<SendEmailVerificationResponse> sendEmailVerification(
             @RequestBody @Valid SendEmailVerificationRequest request) {
         authenticationService.sendEmailVerification(request.email(), request.type());
@@ -72,6 +74,7 @@ public class AuthenticationController {
 
     @Operation(summary = "Verify email by code", description = "Verify email by code")
     @PostMapping("/verify-email-by-code")
+    @ResponseStatus(OK)
     ResponseEntity<VerifyEmailResponse> verifyEmail(@RequestBody @Valid VerifyEmailByCodeRequest request) {
         User user = userService.findByEmail(request.email());
 
@@ -83,6 +86,7 @@ public class AuthenticationController {
 
     @Operation(summary = "Verify email by token", description = "Verify email by token")
     @GetMapping("/verify-email-by-token")
+    @ResponseStatus(OK)
     ResponseEntity<VerifyEmailResponse> verifyEmail(@RequestParam(name = "token") String token) {
         authenticationService.verifyEmail(null, null, token);
 
@@ -92,6 +96,7 @@ public class AuthenticationController {
 
     @Operation(summary = "Sign in", description = "Authenticate user and return token")
     @PostMapping("/sign-in")
+    @ResponseStatus(OK)
     @RateLimit(limitKeyTypes = { BY_IP })
     ResponseEntity<SignInResponse> signIn(@RequestBody @Valid SignInRequest request) {
         User signInUser = authenticationService.signIn(request.email(), request.password());
@@ -109,6 +114,7 @@ public class AuthenticationController {
 
     @Operation(summary = "Refresh", description = "Refresh token")
     @PostMapping("/refresh")
+    @ResponseStatus(OK)
     @RateLimit(limitKeyTypes = { BY_TOKEN })
     ResponseEntity<RefreshResponse> refresh(@RequestBody @Valid RefreshRequest request,
                                             HttpServletRequest httpServletRequest) {
@@ -133,6 +139,7 @@ public class AuthenticationController {
 
     @Operation(summary = "Sign out", description = "Sign out user")
     @PostMapping("/sign-out")
+    @ResponseStatus(OK)
     void signOut(@RequestBody @Valid SignOutRequest request) {
         try {
             authenticationService.signOut(request.accessToken(), request.refreshToken());
@@ -147,6 +154,7 @@ public class AuthenticationController {
 
     @Operation(summary = "Send email forgot password", description = "Send email forgot password")
     @PostMapping("/send-forgot-password")
+    @ResponseStatus(OK)
     ResponseEntity<SendEmailForgotPasswordResponse> sendEmailForgotPassword(
             @RequestBody @Valid SendEmailForgotPasswordRequest request) {
         authenticationService.sendEmailForgotPassword(request.email());
@@ -159,6 +167,7 @@ public class AuthenticationController {
 
     @Operation(summary = "Verify forgot password code", description = "Verify forgot password code")
     @PostMapping("/forgot-password")
+    @ResponseStatus(OK)
     ResponseEntity<ForgotPasswordResponse> forgotPassword(@RequestBody @Valid ForgotPasswordRequest request) {
         User user = userService.findByEmail(request.email());
         String forgotPasswordToken = authenticationService.forgotPassword(user, request.code());
@@ -171,6 +180,7 @@ public class AuthenticationController {
 
     @Operation(summary = "Reset password", description = "Reset password")
     @PostMapping("/reset-password")
+    @ResponseStatus(OK)
     ResponseEntity<ResetPasswordResponse> resetPassword(@RequestBody @Valid ResetPasswordRequest request) {
         authenticationService.resetPassword(request.token(), request.password(), request.passwordConfirmation());
 
@@ -180,6 +190,7 @@ public class AuthenticationController {
 
     @Operation(summary = "Introspect", description = "Introspect provided token")
     @PostMapping("/introspect")
+    @ResponseStatus(OK)
     ResponseEntity<IntrospectResponse> introspect(@RequestBody @Valid IntrospectRequest request)
             throws ParseException, JOSEException {
         boolean isValid = authenticationService.introspect(request.token());

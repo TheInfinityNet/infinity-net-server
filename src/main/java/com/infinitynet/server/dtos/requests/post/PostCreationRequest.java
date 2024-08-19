@@ -1,4 +1,4 @@
-package com.infinitynet.server.dtos.requests;
+package com.infinitynet.server.dtos.requests.post;
 
 import com.infinitynet.server.enums.PostVisibility;
 import jakarta.validation.constraints.NotBlank;

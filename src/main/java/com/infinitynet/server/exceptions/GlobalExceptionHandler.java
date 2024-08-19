@@ -6,6 +6,8 @@ import com.infinitynet.server.exceptions.authentication.AuthenticationErrorCode;
 import com.infinitynet.server.exceptions.authentication.AuthenticationException;
 import com.infinitynet.server.exceptions.file_storage.FileStorageErrorCode;
 import com.infinitynet.server.exceptions.file_storage.FileStorageException;
+import com.infinitynet.server.exceptions.post.PostErrorCode;
+import com.infinitynet.server.exceptions.post.PostException;
 import org.springframework.context.NoSuchMessageException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -107,8 +109,23 @@ public class GlobalExceptionHandler {
 
     // Handle file storage exceptions
     @ExceptionHandler(value = FileStorageException.class)
-    ResponseEntity<ApiResponse<?>> handlingAuthenticationExceptions(FileStorageException exception) {
+    ResponseEntity<ApiResponse<?>> handlingFileStorageExceptions(FileStorageException exception) {
         FileStorageErrorCode authenticationErrorCode = exception.getFileStorageErrorCode();
+        ApiResponse<?> apiResponse = new ApiResponse<>();
+
+        apiResponse.setErrorCode(authenticationErrorCode.getCode());
+        apiResponse.setMessage(getLocalizedMessage(authenticationErrorCode.getMessage()));
+        if (exception.getMoreInfo() != null) {
+            apiResponse.setMessage(getLocalizedMessage(authenticationErrorCode.getMessage(), exception.getMoreInfo()));
+        }
+
+        return ResponseEntity.status(exception.getHttpStatus()).body(apiResponse);
+    }
+
+    // Handle file storage exceptions
+    @ExceptionHandler(value = PostException.class)
+    ResponseEntity<ApiResponse<?>> handlingPostExceptions(PostException exception) {
+        PostErrorCode authenticationErrorCode = exception.getPostErrorCode();
         ApiResponse<?> apiResponse = new ApiResponse<>();
 
         apiResponse.setErrorCode(authenticationErrorCode.getCode());

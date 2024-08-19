@@ -24,7 +24,7 @@ import static com.infinitynet.server.enums.FileHandleAction.UPLOAD;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
-public class FileServiceImpl<P, M> implements FileService<P, M> {
+public class FileServiceImpl<O, M> implements FileService<O, M> {
 
     PostMediaRepository postMediaRepository;
 
@@ -34,7 +34,7 @@ public class FileServiceImpl<P, M> implements FileService<P, M> {
 
     @Override
     @Transactional
-    public void uploadFiles(P owner, MediaOwnerType type, List<MultipartFile> files) {
+    public void uploadFiles(O owner, MediaOwnerType type, List<MultipartFile> files) {
         String prefixPath = switch (type) {
             case POST -> "posts/";
             case PROFILE -> "users/";
