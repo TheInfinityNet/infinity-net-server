@@ -2,7 +2,7 @@ package com.infinitynet.server.configurations.security_configs;
 
 import java.io.IOException;
 
-import com.infinitynet.server.dtos.responses.ApiResponse;
+import com.infinitynet.server.dtos.responses.CommonResponse;
 import com.infinitynet.server.exceptions.authentication.AuthenticationErrorCode;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -27,14 +27,14 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 
-        ApiResponse<?> apiResponse = ApiResponse.builder()
+        CommonResponse<?> commonResponse = CommonResponse.builder()
                 .errorCode(authenticationErrorCode.getCode())
                 .message(getLocalizedMessage(authenticationErrorCode.getMessage()))
                 .build();
 
         ObjectMapper objectMapper = new ObjectMapper();
 
-        response.getWriter().write(objectMapper.writeValueAsString(apiResponse));
+        response.getWriter().write(objectMapper.writeValueAsString(commonResponse));
         response.flushBuffer();
     }
 

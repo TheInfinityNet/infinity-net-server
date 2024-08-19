@@ -1,6 +1,6 @@
 package com.infinitynet.server.exceptions;
 
-import com.infinitynet.server.dtos.responses.ApiResponse;
+import com.infinitynet.server.dtos.responses.CommonResponse;
 
 import com.infinitynet.server.exceptions.authentication.AuthenticationErrorCode;
 import com.infinitynet.server.exceptions.authentication.AuthenticationException;
@@ -30,34 +30,34 @@ public class GlobalExceptionHandler {
 
     // Handle exceptions that are not caught by other handlers
     @ExceptionHandler(value = RuntimeException.class)
-    ResponseEntity<ApiResponse<?>> handlingRuntimeException(RuntimeException exception) {
+    ResponseEntity<CommonResponse<?>> handlingRuntimeException(RuntimeException exception) {
         log.error("Exception: ", exception);
-        ApiResponse<?> apiResponse = new ApiResponse<>();
+        CommonResponse<?> commonResponse = new CommonResponse<>();
 
-        apiResponse.setMessage(getLocalizedMessage("uncategorized"));
+        commonResponse.setMessage(getLocalizedMessage("uncategorized"));
 
-        return ResponseEntity.badRequest().body(apiResponse);
+        return ResponseEntity.badRequest().body(commonResponse);
     }
 
     // Handle exceptions about messages that are not found
     @ExceptionHandler(value = NoSuchMessageException.class)
-    ResponseEntity<ApiResponse<?>> handlingNoSuchMessageException(NoSuchMessageException exception) {
+    ResponseEntity<CommonResponse<?>> handlingNoSuchMessageException(NoSuchMessageException exception) {
         log.error("Exception: ", exception);
-        ApiResponse<?> apiResponse = new ApiResponse<>();
+        CommonResponse<?> commonResponse = new CommonResponse<>();
 
-        apiResponse.setMessage(getLocalizedMessage("no_such_message"));
+        commonResponse.setMessage(getLocalizedMessage("no_such_message"));
 
-        return ResponseEntity.badRequest().body(apiResponse);
+        return ResponseEntity.badRequest().body(commonResponse);
     }
 
     // Handle authentication exceptions
     @ExceptionHandler(value = AuthenticationException.class)
-    ResponseEntity<ApiResponse<?>> handlingAuthenticationExceptions(AuthenticationException exception) {
+    ResponseEntity<CommonResponse<?>> handlingAuthenticationExceptions(AuthenticationException exception) {
         AuthenticationErrorCode authenticationErrorCode = exception.getAuthenticationErrorCode();
-        ApiResponse<Map<String, String>> apiResponse = new ApiResponse<>();
+        CommonResponse<Map<String, String>> commonResponse = new CommonResponse<>();
 
-        apiResponse.setErrorCode(authenticationErrorCode.getCode());
-        apiResponse.setMessage(getLocalizedMessage(authenticationErrorCode.getMessage()));
+        commonResponse.setErrorCode(authenticationErrorCode.getCode());
+        commonResponse.setMessage(getLocalizedMessage(authenticationErrorCode.getMessage()));
 
         Map<String, String> errors = new HashMap<>();
         try{
@@ -97,49 +97,49 @@ public class GlobalExceptionHandler {
             };
 
         } catch (NoSuchMessageException exception1) {
-            ApiResponse<?> apiResponse1 = new ApiResponse<>();
-            apiResponse1.setMessage(getLocalizedMessage("no_such_message"));
-            return ResponseEntity.badRequest().body(apiResponse1);
+            CommonResponse<?> commonResponse1 = new CommonResponse<>();
+            commonResponse1.setMessage(getLocalizedMessage("no_such_message"));
+            return ResponseEntity.badRequest().body(commonResponse1);
         }
 
-        apiResponse.setErrors(errors);
+        commonResponse.setErrors(errors);
 
-        return ResponseEntity.status(exception.getHttpStatus()).body(apiResponse);
+        return ResponseEntity.status(exception.getHttpStatus()).body(commonResponse);
     }
 
     // Handle file storage exceptions
     @ExceptionHandler(value = FileStorageException.class)
-    ResponseEntity<ApiResponse<?>> handlingFileStorageExceptions(FileStorageException exception) {
+    ResponseEntity<CommonResponse<?>> handlingFileStorageExceptions(FileStorageException exception) {
         FileStorageErrorCode authenticationErrorCode = exception.getFileStorageErrorCode();
-        ApiResponse<?> apiResponse = new ApiResponse<>();
+        CommonResponse<?> commonResponse = new CommonResponse<>();
 
-        apiResponse.setErrorCode(authenticationErrorCode.getCode());
-        apiResponse.setMessage(getLocalizedMessage(authenticationErrorCode.getMessage()));
+        commonResponse.setErrorCode(authenticationErrorCode.getCode());
+        commonResponse.setMessage(getLocalizedMessage(authenticationErrorCode.getMessage()));
         if (exception.getMoreInfo() != null) {
-            apiResponse.setMessage(getLocalizedMessage(authenticationErrorCode.getMessage(), exception.getMoreInfo()));
+            commonResponse.setMessage(getLocalizedMessage(authenticationErrorCode.getMessage(), exception.getMoreInfo()));
         }
 
-        return ResponseEntity.status(exception.getHttpStatus()).body(apiResponse);
+        return ResponseEntity.status(exception.getHttpStatus()).body(commonResponse);
     }
 
     // Handle file storage exceptions
     @ExceptionHandler(value = PostException.class)
-    ResponseEntity<ApiResponse<?>> handlingPostExceptions(PostException exception) {
+    ResponseEntity<CommonResponse<?>> handlingPostExceptions(PostException exception) {
         PostErrorCode authenticationErrorCode = exception.getPostErrorCode();
-        ApiResponse<?> apiResponse = new ApiResponse<>();
+        CommonResponse<?> commonResponse = new CommonResponse<>();
 
-        apiResponse.setErrorCode(authenticationErrorCode.getCode());
-        apiResponse.setMessage(getLocalizedMessage(authenticationErrorCode.getMessage()));
+        commonResponse.setErrorCode(authenticationErrorCode.getCode());
+        commonResponse.setMessage(getLocalizedMessage(authenticationErrorCode.getMessage()));
         if (exception.getMoreInfo() != null) {
-            apiResponse.setMessage(getLocalizedMessage(authenticationErrorCode.getMessage(), exception.getMoreInfo()));
+            commonResponse.setMessage(getLocalizedMessage(authenticationErrorCode.getMessage(), exception.getMoreInfo()));
         }
 
-        return ResponseEntity.status(exception.getHttpStatus()).body(apiResponse);
+        return ResponseEntity.status(exception.getHttpStatus()).body(commonResponse);
     }
 
     // Handle exceptions that request data is invalid (validation)
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiResponse<?>>
+    public ResponseEntity<CommonResponse<?>>
     handleMethodArgumentNotValidExceptions(MethodArgumentNotValidException e) {
         try {
             Map<String, String> errors = new HashMap<>();
@@ -151,14 +151,16 @@ public class GlobalExceptionHandler {
                     });
 
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                    new ApiResponse<>(VALIDATION_ERROR.getCode(),
-                            getLocalizedMessage(VALIDATION_ERROR.getMessage()), null, errors)
+                    CommonResponse.builder()
+                            .errorCode(VALIDATION_ERROR.getCode())
+                            .message(getLocalizedMessage(VALIDATION_ERROR.getMessage()))
+                            .build()
             );
 
         } catch (NoSuchMessageException exception) {
-            ApiResponse<?> apiResponse = new ApiResponse<>();
-            apiResponse.setMessage(getLocalizedMessage("no_such_message"));
-            return ResponseEntity.badRequest().body(apiResponse);
+            CommonResponse<?> commonResponse = new CommonResponse<>();
+            commonResponse.setMessage(getLocalizedMessage("no_such_message"));
+            return ResponseEntity.badRequest().body(commonResponse);
         }
     }
 

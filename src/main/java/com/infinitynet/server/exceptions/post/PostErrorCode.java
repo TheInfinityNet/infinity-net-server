@@ -5,6 +5,7 @@ import lombok.Getter;
 @Getter
 public enum PostErrorCode {
     POST_NOT_FOUND("post/post-not-found", "post_not_found"),
+    POST_REACTION_NOT_FOUND("post/post-reaction-not-found", "post_reaction_not_found"),
     ;
 
     PostErrorCode(String code, String message) {

@@ -1,9 +1,11 @@
 package com.infinitynet.server.dtos.responses;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-
+import com.infinitynet.server.dtos.others.Pagination;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+
+import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -12,14 +14,10 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ApiResponse<T> {
+public class PaginateResponse<T> {
 
-    private String errorCode;
+    List<T> items;
 
-    private String message;
-
-    private Object results;
-
-    private T errors;
+    Pagination pagination;
 
 }

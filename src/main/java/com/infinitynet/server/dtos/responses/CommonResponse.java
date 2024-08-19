@@ -1,25 +1,23 @@
 package com.infinitynet.server.dtos.responses;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
+@Setter
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Pagination {
-    int offset;
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class CommonResponse<T> {
 
-    int limit;
+    String errorCode;
 
-    int nextOffset;
+    String message;
 
-    int previousOffset;
+    T errors;
 
-    int totalCount;
-
-    int pageCount;
-
-    int currentPage;
 }

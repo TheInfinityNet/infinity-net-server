@@ -31,7 +31,8 @@ public class FirebaseConfiguration {
                 .setStorageBucket("infinity-net-999.appspot.com")
                 .build();
 
-        return FirebaseApp.initializeApp(firebaseOptions);
+        if (FirebaseApp.getApps().isEmpty()) return FirebaseApp.initializeApp(firebaseOptions);
+        return FirebaseApp.getInstance();
     }
 
 //    @Bean

@@ -2,17 +2,21 @@ package com.infinitynet.server.enums;
 
 public enum ReactionType {
 
-    LIKE("like"),
+    LIKE("1f44d"),
 
-    LOVE("love"),
+    LOVE("2764-fe0f"),
 
-    HAHA("haha"),
+    HAHA("1f603"),
 
-    WOW("wow"),
+    WOW("1f622"),
 
-    SAD("sad"),
+    SAD("1f622"),
 
-    ANGRY("angry");
+    FOLDED_HANDS("1f64f"),
+
+    DISLIKE("1f44e"),
+
+    ANGRY("1f621");
 
     String value;
 

@@ -50,7 +50,7 @@ public class Post extends AbstractEntity {
     @JsonManagedReference
     List<PostMedia> postMedias;
 
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     List<PostReaction> postReactions;
 

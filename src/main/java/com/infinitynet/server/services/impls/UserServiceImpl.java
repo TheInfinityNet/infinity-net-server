@@ -44,51 +44,51 @@ public class UserServiceImpl implements UserService {
     PasswordEncoder passwordEncoder;
 
     // Generate fake data
-//    @PostConstruct
-//    public void generateAndSaveFakeUsers() {
-//        Faker faker = new Faker();
-//        List<User> users = new ArrayList<>();
-//
-//        User myUser = User.builder()
-//                .email("benlun99999@gmail.com")
-//                .userName("benlun99999")
-//                .password(passwordEncoder.encode("123456"))
-//                .firstName("Ben")
-//                .lastName("Lun")
-//                .middleName("Nguyen")
-//                .mobileNumber(faker.phoneNumber().cellPhone())
-//                .birthdate(LocalDate.now().minusYears(21))
-//                .avatar(faker.internet().avatar())
-//                .cover(faker.internet().image())
-//                .gender(MALE)
-//                .isActivated(true)
-//                .build();
-//        users.add(myUser);
-//
-//        for (int i = 0; i < 20; i++) { // Generate 10 fake users
-//            String email = faker.internet().emailAddress();
-//            String password = passwordEncoder.encode(email);
-//            User user = new User();
-//            user.setEmail(email);
-//            user.setUserName(faker.name().username());
-//            user.setPassword(password);
-//            user.setUserName(faker.name().username());
-//            user.setFirstName(faker.name().firstName());
-//            user.setLastName(faker.name().lastName());
-//            user.setMiddleName(faker.name().lastName());
-//            user.setMobileNumber(faker.phoneNumber().cellPhone());
-//            user.setBirthdate(LocalDate.now().minusYears(faker.number().numberBetween(18, 60)) );
-//            user.setGender(Gender.values()[faker.number().numberBetween(0, 2)]);
-//            user.setActivated(true);
-//            user.setAvatar(faker.internet().avatar());
-//            user.setAcceptTerms(true);
-//            user.setBio(faker.lorem().sentence());
-//            user.setCover(faker.internet().image());
-//            users.add(user);
-//
-//        }
-//        userRepository.saveAll(users);
-//    }
+    @PostConstruct
+    public void generateAndSaveFakeUsers() {
+        Faker faker = new Faker();
+        List<User> users = new ArrayList<>();
+
+        User myUser = User.builder()
+                .email("benlun99999@gmail.com")
+                .userName("benlun99999")
+                .password(passwordEncoder.encode("123456"))
+                .firstName("Ben")
+                .lastName("Lun")
+                .middleName("Nguyen")
+                .mobileNumber(faker.phoneNumber().cellPhone())
+                .birthdate(LocalDate.now().minusYears(21))
+                .avatar(faker.internet().avatar())
+                .cover(faker.internet().image())
+                .gender(MALE)
+                .isActivated(true)
+                .build();
+        users.add(myUser);
+
+        for (int i = 0; i < 20; i++) { // Generate 10 fake users
+            String email = faker.internet().emailAddress();
+            String password = passwordEncoder.encode(email);
+            User user = new User();
+            user.setEmail(email);
+            user.setUserName(faker.name().username());
+            user.setPassword(password);
+            user.setUserName(faker.name().username());
+            user.setFirstName(faker.name().firstName());
+            user.setLastName(faker.name().lastName());
+            user.setMiddleName(faker.name().lastName());
+            user.setMobileNumber(faker.phoneNumber().cellPhone());
+            user.setBirthdate(LocalDate.now().minusYears(faker.number().numberBetween(18, 60)) );
+            user.setGender(Gender.values()[faker.number().numberBetween(0, 2)]);
+            user.setActivated(true);
+            user.setAvatar(faker.internet().avatar());
+            user.setAcceptTerms(true);
+            user.setBio(faker.lorem().sentence());
+            user.setCover(faker.internet().image());
+            users.add(user);
+
+        }
+        userRepository.saveAll(users);
+    }
 
     @Override
     public List<FriendInforResponse> getFriends(String userId, int offset, int limit) {

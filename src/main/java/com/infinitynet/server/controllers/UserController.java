@@ -1,7 +1,6 @@
 package com.infinitynet.server.controllers;
 
 import com.infinitynet.server.dtos.responses.FriendInforResponse;
-import com.infinitynet.server.dtos.responses.Pagination;
 import com.infinitynet.server.dtos.responses.UserInfoResponse;
 import com.infinitynet.server.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,11 +15,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import static com.infinitynet.server.components.Translator.getLocalizedMessage;
 import static org.springframework.http.HttpStatus.OK;
 
 @RestController
