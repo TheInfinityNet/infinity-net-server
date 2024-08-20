@@ -5,6 +5,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.util.Date;
+import java.util.List;
 
 @Getter
 @Setter
@@ -22,8 +23,12 @@ public class PostResponse {
 
     Long reactionCounts;
 
+    PostReactionResponse currentUserReaction;
+
     Date createdAt;
 
     Date updatedAt;
+
+    List<PostMediaResponse> medias;
 
 }

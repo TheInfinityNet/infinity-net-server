@@ -26,7 +26,8 @@ public class PostReaction extends AbstractEntity {
     @MapsId("userId")
     @JoinColumn(name = "user_id", referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "fk_post_reactions_users",
-                    foreignKeyDefinition = "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false)
+                    foreignKeyDefinition = "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false,
+            updatable = false)
     @JsonManagedReference
     User user;
 
@@ -34,13 +35,18 @@ public class PostReaction extends AbstractEntity {
     @MapsId("postId")
     @JoinColumn(name = "post_id", referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "fk_post_reactions_posts",
-                    foreignKeyDefinition = "FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false)
+                    foreignKeyDefinition = "FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false,
+            updatable = false)
     @JsonBackReference
     Post post;
 
     @Column(name = "reaction_type", nullable = false)
     @Enumerated(EnumType.STRING)
     ReactionType reactionType;
+
+//    @OneToOne(mappedBy = "postReaction", cascade = CascadeType.ALL, orphanRemoval = true)
+//    @JsonBackReference
+//    PostReactionEvent postReactionEvent;
 
     @Embeddable
     @NoArgsConstructor

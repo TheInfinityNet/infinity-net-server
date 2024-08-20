@@ -22,7 +22,8 @@ public class CommentMedia extends FileMetadata {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "comment_id", referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "fk_comment_medias_comments",
-                    foreignKeyDefinition = "FOREIGN KEY (comment_id) REFERENCES comments(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false)
+                    foreignKeyDefinition = "FOREIGN KEY (comment_id) REFERENCES comments(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false,
+            updatable = false)
     @JsonBackReference
     Comment comment;
 

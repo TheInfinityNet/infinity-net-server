@@ -8,7 +8,6 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.io.Serializable;
-import java.util.List;
 
 @Getter
 @Setter
@@ -17,37 +16,33 @@ import java.util.List;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
-@Table(name = "comment_reactions")
-public class CommentReaction extends AbstractEntity {
+@Table(name = "post_media_reactions")
+public class PostMediaReaction extends AbstractEntity {
 
     @EmbeddedId
-    CommentReactionId id;
+    PostMediaReactionId id;
 
     @ManyToOne
     @MapsId("userId")
     @JoinColumn(name = "user_id", referencedColumnName = "id",
-            foreignKey = @ForeignKey(name = "fk_comment_reactions_users",
+            foreignKey = @ForeignKey(name = "fk_post_media_reactions_users",
                     foreignKeyDefinition = "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false,
             updatable = false)
     @JsonManagedReference
     User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("commentId")
-    @JoinColumn(name = "comment_id", referencedColumnName = "id",
-            foreignKey = @ForeignKey(name = "fk_comment_reactions_comments",
-                    foreignKeyDefinition = "FOREIGN KEY (comment_id) REFERENCES comments(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false,
+    @MapsId("postId")
+    @JoinColumn(name = "post_media_id", referencedColumnName = "id",
+            foreignKey = @ForeignKey(name = "fk_post_media_reactions_posts",
+                    foreignKeyDefinition = "FOREIGN KEY (post_media_id) REFERENCES post_medias(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false,
             updatable = false)
     @JsonBackReference
-    Comment comment;
+    PostMedia postMedia;
 
     @Column(name = "reaction_type", nullable = false)
     @Enumerated(EnumType.STRING)
     ReactionType reactionType;
-
-//    @OneToOne(mappedBy = "commentReaction", cascade = CascadeType.ALL, orphanRemoval = true)
-//    @JsonManagedReference
-//    CommentReactionEvent commentReactionEvent;
 
     @Embeddable
     @NoArgsConstructor
@@ -55,13 +50,13 @@ public class CommentReaction extends AbstractEntity {
     @FieldDefaults(level = AccessLevel.PRIVATE)
     @Getter
     @Setter
-    public static class CommentReactionId implements Serializable {
+    public static class PostMediaReactionId implements Serializable {
 
         @Column(name = "user_id")
         String userId;
 
-        @Column(name = "comment_id")
-        String commentId;
+        @Column(name = "post_media_id")
+        String postMediaId;
 
     }
 

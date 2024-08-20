@@ -4,12 +4,12 @@ import com.infinitynet.server.dtos.others.Pagination;
 import com.infinitynet.server.dtos.requests.post.PostCreationRequest;
 import com.infinitynet.server.dtos.responses.CommonResponse;
 import com.infinitynet.server.dtos.responses.PaginateResponse;
+import com.infinitynet.server.dtos.responses.post.PostMediaResponse;
 import com.infinitynet.server.dtos.responses.post.PostReactionResponse;
 import com.infinitynet.server.dtos.responses.post.PostResponse;
-import com.infinitynet.server.entities.Post;
-import com.infinitynet.server.entities.PostReaction;
-import com.infinitynet.server.entities.User;
+import com.infinitynet.server.entities.*;
 import com.infinitynet.server.enums.ReactionType;
+import com.infinitynet.server.exceptions.post.PostException;
 import com.infinitynet.server.mappers.PostMapper;
 import com.infinitynet.server.services.FileService;
 import com.infinitynet.server.services.PostService;
@@ -44,7 +44,7 @@ public class PostController {
 
     PostService postService;
 
-    FileService fileService;
+    FileService<Post, PostMedia> fileService;
 
     UserService userService;
 
@@ -57,7 +57,7 @@ public class PostController {
                                  @RequestPart(required = false) List<MultipartFile> mediaFiles) {
         SecurityContext context = SecurityContextHolder.getContext();
         User owner = userService.findByEmail(context.getAuthentication().getName());
-        Post newPost = postService.createPost(owner, request.content(), request.visibility());
+        Post newPost = postService.createPost(owner, request.content(), null, request.visibility());
 
         if (mediaFiles != null && !mediaFiles.isEmpty()) fileService.uploadFiles(newPost, POST, mediaFiles);
 
@@ -65,21 +65,94 @@ public class PostController {
                 .message(getLocalizedMessage("create_post_success")).build());
     }
 
+    @Operation(summary = "Get news feed", description = "Get news feed of the current user")
+    @GetMapping("/news-feed")
+    @ResponseStatus(OK)
+    ResponseEntity<PaginateResponse<PostResponse>> getNewsFeed(@RequestParam(defaultValue = "0") String offset,
+                                                   @RequestParam(defaultValue = "100") String limit) {
+        SecurityContext context = SecurityContextHolder.getContext();
+        User current = userService.findByEmail(context.getAuthentication().getName());
+        Page<Post> posts = postService.findAllByUser(current, Integer.parseInt(offset), Integer.parseInt(limit));
+        List<PostResponse> items = posts
+                .map(post -> {
+                    PostReaction currentUsersReaction;
+                    try {
+                        currentUsersReaction = postService.findById(new PostReaction.PostReactionId(current.getId(), post.getId()));
+                    } catch (PostException e) {
+                        currentUsersReaction = null;
+                    }
+
+                    List<PostMediaResponse> medias = postService.previewMedias(post)
+                            .stream()
+                            .map(media -> {
+                                PostMediaResponse dto = postMapper.toPostMediaResponse(media);
+                                String url = fileService.getObjectUrl(media);
+                                dto.setUrl(url);
+                                return dto;
+                            })
+                            .toList();
+
+                    PostResponse response = postMapper.toPostResponse(post);
+                    response.setReactionCounts(postService.countByPostAndReactionType(post, null));
+                    response.setCurrentUserReaction(postMapper.toPostReactionResponse(currentUsersReaction));
+                    response.setMedias(medias);
+                    return response;
+                })
+                .toList();
+
+        return ResponseEntity.status(OK).body(PaginateResponse.<PostResponse>builder()
+                .items(items)
+                .pagination(new Pagination(Integer.parseInt(offset), Integer.parseInt(limit), posts.getTotalElements()))
+                .build()
+        );
+    }
+
+
     @Operation(summary = "Get post by id", description = "Get a post by id")
     @GetMapping("/{postId}")
     @ResponseStatus(OK)
     ResponseEntity<PostResponse> getPost(@PathVariable String postId) {
+        SecurityContext context = SecurityContextHolder.getContext();
+        User current = userService.findByEmail(context.getAuthentication().getName());
         Post post = postService.findById(postId);
+
+        PostReaction currentUsersReaction;
+        try {
+            currentUsersReaction = postService.findById(new PostReaction.PostReactionId(current.getId(), post.getId()));
+        } catch (PostException e) {
+            currentUsersReaction = null;
+        }
+
+        List<PostMediaResponse> medias = postService.findAllByPost(post)
+                .stream()
+                .map(media -> {
+                    PostMediaResponse dto = postMapper.toPostMediaResponse(media);
+                    String url = fileService.getObjectUrl(media);
+                    PostMediaReaction currentUsersMediaReaction;
+                    try {
+                        currentUsersMediaReaction = postService.findById(new PostMediaReaction.PostMediaReactionId(current.getId(), media.getId()));
+                    } catch (PostException e) {
+                        currentUsersMediaReaction = null;
+                    }
+                    dto.setUrl(url);
+                    dto.setCurrentUserReaction(postMapper.toPostReactionResponse(currentUsersMediaReaction));
+                    dto.setReactionCounts(postService.countByPostMediaAndReactionType(media, null));
+                    return dto;
+                })
+                .toList();
+
         PostResponse response = postMapper.toPostResponse(post);
         response.setReactionCounts(postService.countByPostAndReactionType(post, null));
-
+        response.setCurrentUserReaction(postMapper.toPostReactionResponse(currentUsersReaction));
+        response.setMedias(medias);
         return ResponseEntity.status(OK).body(response);
     }
 
-    @Operation(summary = "Get post reactions", description = "Get all reactions to a post")
+    /*_____________________________________________________GET-REACTIONS__________________________________________________________*/
+    @Operation(summary = "Get post reactions", description = "Get reactions of a post")
     @GetMapping("/{postId}/reactions")
     @ResponseStatus(OK)
-    ResponseEntity<PaginateResponse<PostReactionResponse>> getReactionsPost(@PathVariable String postId,
+    ResponseEntity<PaginateResponse<PostReactionResponse>> getPostReactions(@PathVariable String postId,
                                                       @RequestParam(required = false) ReactionType type,
                                                       @RequestParam(defaultValue = "0") String offset,
                                                       @RequestParam(defaultValue = "100") String limit) {
@@ -97,6 +170,28 @@ public class PostController {
         );
     }
 
+    @Operation(summary = "Get post media reactions", description = "Get reactions to of post media")
+    @GetMapping("/{mediaId}/media-reactions")
+    @ResponseStatus(OK)
+    ResponseEntity<PaginateResponse<PostReactionResponse>> getPostMediaReactions(@PathVariable String mediaId,
+                                                                            @RequestParam(required = false) ReactionType type,
+                                                                            @RequestParam(defaultValue = "0") String offset,
+                                                                            @RequestParam(defaultValue = "100") String limit) {
+        PostMedia media = fileService.findById(mediaId);
+        Page<PostMediaReaction> reactions =
+                postService.findAllByPostAndReactionType(media, type, Integer.parseInt(offset), Integer.parseInt(limit));
+        List<PostReactionResponse> items = reactions
+                .map(postMapper::toPostReactionResponse)
+                .toList();
+
+        return ResponseEntity.status(OK).body(PaginateResponse.<PostReactionResponse>builder()
+                .items(items)
+                .pagination(new Pagination(Integer.parseInt(offset), Integer.parseInt(limit), reactions.getTotalElements()))
+                .build()
+        );
+    }
+
+    /*_____________________________________________________CREATE-REACTION__________________________________________________________*/
     @Operation(summary = "Reaction to a post", description = "Reaction to a post with a reaction type")
     @PostMapping("/{postId}/reactions")
     @ResponseStatus(CREATED)
@@ -104,22 +199,48 @@ public class PostController {
         SecurityContext context = SecurityContextHolder.getContext();
         User current = userService.findByEmail(context.getAuthentication().getName());
         Post post = postService.findById(postId);
-        PostReaction postReaction = postService.createReactionPost(current, post, type);
+        PostReaction reaction = postService.reactionPost(current, post, type);
 
-        return ResponseEntity.status(CREATED).body(postMapper.toPostReactionResponse(postReaction));
+        return ResponseEntity.status(CREATED).body(postMapper.toPostReactionResponse(reaction));
     }
 
+    @Operation(summary = "Reaction to a post media", description = "Reaction to a post media with a reaction type")
+    @PostMapping("/{mediaId}/media-reactions")
+    @ResponseStatus(CREATED)
+    ResponseEntity<PostReactionResponse> reactionPostMedia(@PathVariable String mediaId, @RequestParam ReactionType type) {
+        SecurityContext context = SecurityContextHolder.getContext();
+        User current = userService.findByEmail(context.getAuthentication().getName());
+        PostMedia media = fileService.findById(mediaId);
+        PostMediaReaction reaction = postService.reactionPostMedia(current, media, type);
+
+        return ResponseEntity.status(CREATED).body(postMapper.toPostReactionResponse(reaction));
+    }
+
+    /*_____________________________________________________DELETE-REACTION__________________________________________________________*/
     @Operation(summary = "Delete post reaction", description = "Delete a reaction to a post")
     @DeleteMapping("/{postId}/reactions")
     @ResponseStatus(OK)
-    ResponseEntity<PostReactionResponse> deleteReactionPost(@PathVariable String postId) {
+    ResponseEntity<PostReactionResponse> deletePostReaction(@PathVariable String postId) {
         SecurityContext context = SecurityContextHolder.getContext();
         User current = userService.findByEmail(context.getAuthentication().getName());
         Post post = postService.findById(postId);
-        PostReaction postReaction = postService.findById(new PostReaction.PostReactionId(current.getId(), post.getId()));
-        postService.deleteReactionPost(postReaction);
+        PostReaction reaction = postService.findById(new PostReaction.PostReactionId(current.getId(), post.getId()));
+        postService.deletePostReaction(reaction);
 
-        return ResponseEntity.status(OK).body(postMapper.toPostReactionResponse(postReaction));
+        return ResponseEntity.status(OK).body(postMapper.toPostReactionResponse(reaction));
+    }
+
+    @Operation(summary = "Delete post media reaction", description = "Delete a reaction to a post media")
+    @DeleteMapping("/{mediaId}/media-reactions")
+    @ResponseStatus(OK)
+    ResponseEntity<PostReactionResponse> deletePostMediaReaction(@PathVariable String mediaId) {
+        SecurityContext context = SecurityContextHolder.getContext();
+        User current = userService.findByEmail(context.getAuthentication().getName());
+        PostMedia media = fileService.findById(mediaId);
+        PostMediaReaction reaction = postService.findById(new PostMediaReaction.PostMediaReactionId(current.getId(), media.getId()));
+        postService.deleteMediaPostReaction(reaction);
+
+        return ResponseEntity.status(OK).body(postMapper.toPostReactionResponse(reaction));
     }
 
 

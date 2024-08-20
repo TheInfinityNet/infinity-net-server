@@ -26,11 +26,12 @@ public class PostReactionEvent extends Event {
     @Enumerated(EnumType.STRING)
     ReactionType reactionType;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "post_id", referencedColumnName = "id",
-            foreignKey = @ForeignKey(name = "fk_post_reaction_events_posts",
-                    foreignKeyDefinition = "FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false)
-    @JsonManagedReference
-    Post post;
+//    @OneToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "post_reaction_id", referencedColumnName = "id",
+//            foreignKey = @ForeignKey(name = "fk_post_reaction_events_post_reactions",
+//                    foreignKeyDefinition = "FOREIGN KEY (post_reaction_id) REFERENCES post_reactions(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false,
+//            updatable = false)
+//    @JsonManagedReference
+//    PostReaction postReaction;
 
 }

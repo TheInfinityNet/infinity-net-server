@@ -24,7 +24,8 @@ public class CommentMention extends AbstractEntity {
     @MapsId("commentId")
     @JoinColumn(name = "comment_id", referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "fk_comment_mentions_comments",
-                    foreignKeyDefinition = "FOREIGN KEY (comment_id) REFERENCES comments(id) ON DELETE CASCADE"), nullable = false)
+                    foreignKeyDefinition = "FOREIGN KEY (comment_id) REFERENCES comments(id) ON DELETE CASCADE"), nullable = false,
+            updatable = false)
     @JsonBackReference
     Comment comment;
 
@@ -32,9 +33,14 @@ public class CommentMention extends AbstractEntity {
     @MapsId("mentionedUserId")
     @JoinColumn(name = "mentioned_user_id", referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "fk_mentioned_user",
-                    foreignKeyDefinition = "FOREIGN KEY (mentioned_user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false)
+                    foreignKeyDefinition = "FOREIGN KEY (mentioned_user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false,
+            updatable = false)
     @JsonManagedReference
     User mentionedUser;
+
+//    @OneToOne(mappedBy = "commentMention", cascade = CascadeType.ALL, orphanRemoval = true)
+//    @JsonBackReference
+//    CommentMentionEvent commentMentionEvent;
 
     @Embeddable
     @NoArgsConstructor

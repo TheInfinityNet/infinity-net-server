@@ -2,6 +2,7 @@ package com.infinitynet.server.entities;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.infinitynet.server.enums.PostType;
 import com.infinitynet.server.enums.PostVisibility;
 import jakarta.persistence.*;
 import lombok.*;
@@ -31,10 +32,15 @@ public class Post extends AbstractEntity {
     @Enumerated(EnumType.STRING)
     PostVisibility postVisibility;
 
+    @Column(name = "post_type", nullable = false)
+    @Enumerated(EnumType.STRING)
+    PostType postType;
+
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "fk_posts_users",
-                    foreignKeyDefinition = "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false)
+                    foreignKeyDefinition = "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false,
+            updatable = false)
     @JsonManagedReference
     User user;
 
@@ -46,7 +52,7 @@ public class Post extends AbstractEntity {
     @JsonBackReference
     List<Comment> comments;
 
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     List<PostMedia> postMedias;
 
@@ -54,16 +60,8 @@ public class Post extends AbstractEntity {
     @JsonManagedReference
     List<PostReaction> postReactions;
 
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     List<PostMention> postMentions;
-
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonBackReference
-    List<PostMentionEvent> postMentionEvents;
-
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonBackReference
-    List<PostReactionEvent> postReactionEvents;
 
 }

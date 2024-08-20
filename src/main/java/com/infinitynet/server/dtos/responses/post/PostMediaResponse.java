@@ -1,8 +1,6 @@
 package com.infinitynet.server.dtos.responses.post;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.infinitynet.server.enums.ReactionType;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -14,17 +12,20 @@ import java.util.Date;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class PostReactionResponse {
+public class PostMediaResponse {
 
-        String postId;
+    String id;
 
-        String userId;
+    String url;
 
-        @JsonProperty("type")
-        ReactionType reactionType;
+    String contentType;
 
-        Date createdAt;
+    Long reactionCounts;
 
-        Date updatedAt;
+    PostReactionResponse currentUserReaction;
+
+    Date createdAt;
+
+    Date updatedAt;
 
 }

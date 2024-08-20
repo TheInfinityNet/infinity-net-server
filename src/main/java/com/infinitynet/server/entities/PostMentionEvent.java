@@ -24,15 +24,17 @@ public class PostMentionEvent extends Event {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id", referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "fk_post_mention_events_posts",
-                    foreignKeyDefinition = "FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false)
+                    foreignKeyDefinition = "FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false,
+            updatable = false)
     @JsonManagedReference
     Post post;
 
-    @ManyToOne
-    @JoinColumn(name = "mentioned_user_id", referencedColumnName = "id",
-            foreignKey = @ForeignKey(name = "fk_mentioned_user",
-                    foreignKeyDefinition = "FOREIGN KEY (mentioned_user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false)
-    @JsonManagedReference
-    User mentionedUser;
+//    @OneToOne
+//    @JoinColumn(name = "post_mention_id", referencedColumnName = "id",
+//            foreignKey = @ForeignKey(name = "fk_post_mention_events_post_mentions",
+//                    foreignKeyDefinition = "FOREIGN KEY (post_mention_id) REFERENCES post_mentions(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false,
+//            updatable = false)
+//    @JsonManagedReference
+//    PostMention postMention;
 
 }

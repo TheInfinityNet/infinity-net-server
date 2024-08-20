@@ -22,7 +22,7 @@ public class FileMetadata extends AbstractEntity {
     String objectKey;
 
     @Column(name = "media_type", nullable = false)
-    String mediaType;
+    String contentType;
 
     @Column(nullable = false)
     long size;
