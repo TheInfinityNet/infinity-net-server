@@ -28,7 +28,8 @@ public class MessageEmoji extends AbstractEntity {
     @MapsId("userId")
     @JoinColumn(name = "user_id", referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "fk_message_emojis_users",
-                    foreignKeyDefinition = "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false)
+                    foreignKeyDefinition = "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false,
+            updatable = false)
     @JsonManagedReference
     User user;
 
@@ -36,7 +37,8 @@ public class MessageEmoji extends AbstractEntity {
     @MapsId("messageId")
     @JoinColumn(name = "message_id", referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "fk_message_emojis_messages",
-                    foreignKeyDefinition = "FOREIGN KEY (message_id) REFERENCES messages(id) ON DELETE CASCADE"), nullable = false)
+                    foreignKeyDefinition = "FOREIGN KEY (message_id) REFERENCES messages(id) ON DELETE CASCADE"), nullable = false,
+            updatable = false)
     @JsonBackReference
     Message message;
 

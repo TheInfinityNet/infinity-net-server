@@ -71,7 +71,7 @@ public class User extends AbstractEntity {
     @JsonBackReference
     List<Setting> settings;
 
-    @OneToMany(mappedBy = "createdBy", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "triggeredBy", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonBackReference
     List<Event> events;
 
@@ -119,10 +119,6 @@ public class User extends AbstractEntity {
     @JsonBackReference
     List<PostMention> postMentions;
 
-    @OneToMany(mappedBy = "mentionedUser", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonBackReference
-    List<PostMentionEvent> postMentionEvents;
-
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonBackReference
     List<Comment> comments;
@@ -133,7 +129,7 @@ public class User extends AbstractEntity {
 
     @OneToMany(mappedBy = "mentionedUser", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonBackReference
-    List<CommentMentionEvent> commentMentionEvents;
+    List<CommentMention> commentMention;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonBackReference

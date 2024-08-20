@@ -27,14 +27,16 @@ public class Message extends AbstractEntity {
     @ManyToOne
     @JoinColumn(name = "sender_id", referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "fk_sender",
-                    foreignKeyDefinition = "FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false)
+                    foreignKeyDefinition = "FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false,
+            updatable = false)
     @JsonManagedReference
     User sender;
 
     @ManyToOne
     @JoinColumn(name = "receiver_id", referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "fk_receiver",
-                    foreignKeyDefinition = "FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false)
+                    foreignKeyDefinition = "FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false,
+            updatable = false)
     @JsonManagedReference
     User receiver;
 

@@ -24,7 +24,8 @@ public class PostMention extends AbstractEntity {
     @MapsId("postId")
     @JoinColumn(name = "post_id", referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "fk_post_mentions_posts",
-                    foreignKeyDefinition = "FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE"), nullable = false)
+                    foreignKeyDefinition = "FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE"), nullable = false,
+            updatable = false)
     @JsonBackReference
     Post post;
 
@@ -32,9 +33,14 @@ public class PostMention extends AbstractEntity {
     @MapsId("mentionedUserId")
     @JoinColumn(name = "mentioned_user_id", referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "fk_mentioned_user",
-                    foreignKeyDefinition = "FOREIGN KEY (mentioned_user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false)
+                    foreignKeyDefinition = "FOREIGN KEY (mentioned_user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false,
+            updatable = false)
     @JsonManagedReference
     User mentionedUser;
+
+//    @OneToOne(mappedBy = "postMention", cascade = CascadeType.ALL, orphanRemoval = true)
+//    @JsonBackReference
+//    PostMentionEvent postMentionEvent;
 
     @Embeddable
     @NoArgsConstructor

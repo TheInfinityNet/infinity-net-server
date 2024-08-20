@@ -26,11 +26,12 @@ public class CommentReactionEvent extends Event {
     @Enumerated(EnumType.STRING)
     ReactionType reactionType;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "comment_id", referencedColumnName = "id",
-            foreignKey = @ForeignKey(name = "fk_comment_reaction_events_comments",
-                    foreignKeyDefinition = "FOREIGN KEY (comment_id) REFERENCES comments(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false)
-    @JsonManagedReference
-    Comment comment;
+//    @OneToOne
+//    @JoinColumn(name = "comment_reaction_id", referencedColumnName = "id",
+//            foreignKey = @ForeignKey(name = "fk_comment_reaction_events_comment_reactions",
+//                    foreignKeyDefinition = "FOREIGN KEY (comment_reaction_id) REFERENCES comment_reactions(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false,
+//            updatable = false)
+//    @JsonManagedReference
+//    CommentReaction commentReaction;
 
 }

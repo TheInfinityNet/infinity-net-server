@@ -22,7 +22,8 @@ public class MessageMedia extends FileMetadata {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "message_id", referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "fk_message_medias_messages",
-                    foreignKeyDefinition = "FOREIGN KEY (message_id) REFERENCES messages(id) ON DELETE CASCADE"), nullable = false)
+                    foreignKeyDefinition = "FOREIGN KEY (message_id) REFERENCES messages(id) ON DELETE CASCADE"), nullable = false,
+            updatable = false)
     @JsonBackReference
     Message message;
 

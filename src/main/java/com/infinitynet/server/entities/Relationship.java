@@ -24,14 +24,16 @@ public class Relationship extends AbstractEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "related_user_id", referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "fk_related_user",
-                    foreignKeyDefinition = "FOREIGN KEY (related_user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false)
+                    foreignKeyDefinition = "FOREIGN KEY (related_user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false,
+            updatable = false)
     @JsonBackReference
     User relatedUser;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "initiated_by_user_id", referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "fk_initiated_by_user",
-                    foreignKeyDefinition = "FOREIGN KEY (initiated_by_user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false)
+                    foreignKeyDefinition = "FOREIGN KEY (initiated_by_user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false,
+            updatable = false)
     @JsonBackReference
     User initiatedByUser;
 

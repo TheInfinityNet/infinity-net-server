@@ -1,9 +1,12 @@
 package com.infinitynet.server.entities;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -27,8 +30,21 @@ public class PostMedia extends FileMetadata {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id", referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "fk_post_medias_posts",
-                    foreignKeyDefinition = "FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE"), nullable = false)
+                    foreignKeyDefinition = "FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE"), nullable = false,
+            updatable = false)
     @JsonBackReference
     Post post;
+
+    @OneToMany(mappedBy = "parentPostMedia", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonBackReference
+    List<SharedPost> sharedPosts;
+
+    @OneToMany(mappedBy = "postMedia", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonBackReference
+    List<Comment> comments;
+
+    @OneToMany(mappedBy = "postMedia", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    List<PostMediaReaction> postMediaReactions;
 
 }

@@ -24,11 +24,12 @@ public class Event extends AbstractEntity {
     String id;
 
     @ManyToOne
-    @JoinColumn(name = "created_by", referencedColumnName = "id",
+    @JoinColumn(name = "triggered_by", referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "fk_events_users",
-                    foreignKeyDefinition = "FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false)
+                    foreignKeyDefinition = "FOREIGN KEY (triggered_by) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false,
+            updatable = false)
     @JsonManagedReference
-    User createdBy;
+    User triggeredBy;
 
     @Column(nullable = false)
     String thumbnail;

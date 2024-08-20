@@ -24,7 +24,8 @@ public class EventAttendee extends AbstractEntity {
     @MapsId("attendeeId")
     @JoinColumn(name = "attendee_id", referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "fk_event_attendees_users",
-                    foreignKeyDefinition = "FOREIGN KEY (attendee_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false)
+                    foreignKeyDefinition = "FOREIGN KEY (attendee_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false,
+            updatable = false)
     @JsonManagedReference
     User attendee;
 
@@ -32,7 +33,8 @@ public class EventAttendee extends AbstractEntity {
     @MapsId("eventId")
     @JoinColumn(name = "event_id", referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "fk_event_attendees_events",
-                    foreignKeyDefinition = "FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false)
+                    foreignKeyDefinition = "FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false,
+            updatable = false)
     @JsonManagedReference
     Event event;
 
