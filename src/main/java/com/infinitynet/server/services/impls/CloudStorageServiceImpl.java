@@ -15,7 +15,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,7 +38,7 @@ public class CloudStorageServiceImpl implements CloudStorageService {
         if (fileSizeInMegabytes > 10.0f) throw new FileStorageException(FILE_TOO_LARGE, BAD_REQUEST);
 
         Bucket bucket = StorageClient.getInstance().bucket();
-        InputStream fileStream = null;
+        InputStream fileStream;
         try {
             fileStream = file.getInputStream();
 

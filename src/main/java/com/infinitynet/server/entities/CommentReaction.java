@@ -2,38 +2,24 @@ package com.infinitynet.server.entities;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.infinitynet.server.enums.ReactionType;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.io.Serializable;
-import java.util.List;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
-@Table(name = "comment_reactions")
-public class CommentReaction extends AbstractEntity {
-
-    @EmbeddedId
-    CommentReactionId id;
-
-    @ManyToOne
-    @MapsId("userId")
-    @JoinColumn(name = "user_id", referencedColumnName = "id",
-            foreignKey = @ForeignKey(name = "fk_comment_reactions_users",
-                    foreignKeyDefinition = "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false,
-            updatable = false)
-    @JsonManagedReference
-    User user;
+@Table(name = "comment_reactions", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"comment_id", "user_id"})
+})
+public class CommentReaction extends Reaction {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("commentId")
     @JoinColumn(name = "comment_id", referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "fk_comment_reactions_comments",
                     foreignKeyDefinition = "FOREIGN KEY (comment_id) REFERENCES comments(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false,
@@ -41,28 +27,8 @@ public class CommentReaction extends AbstractEntity {
     @JsonBackReference
     Comment comment;
 
-    @Column(name = "reaction_type", nullable = false)
-    @Enumerated(EnumType.STRING)
-    ReactionType reactionType;
-
-//    @OneToOne(mappedBy = "commentReaction", cascade = CascadeType.ALL, orphanRemoval = true)
-//    @JsonManagedReference
-//    CommentReactionEvent commentReactionEvent;
-
-    @Embeddable
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @FieldDefaults(level = AccessLevel.PRIVATE)
-    @Getter
-    @Setter
-    public static class CommentReactionId implements Serializable {
-
-        @Column(name = "user_id")
-        String userId;
-
-        @Column(name = "comment_id")
-        String commentId;
-
-    }
+    @OneToOne(mappedBy = "commentReaction", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    CommentReactionNotification commentReactionNotification;
 
 }

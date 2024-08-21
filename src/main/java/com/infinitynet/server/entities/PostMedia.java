@@ -5,11 +5,13 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.SuperBuilder;
 
 import java.util.List;
 
 @Getter
 @Setter
+@SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
@@ -21,11 +23,6 @@ import java.util.List;
                 foreignKeyDefinition = "FOREIGN KEY (id) REFERENCES file_metadata(id) ON DELETE CASCADE ON UPDATE CASCADE")
 )
 public class PostMedia extends FileMetadata {
-
-    public PostMedia(String id, String objectKey, String mediaType, long size, Post post) {
-        super(id, objectKey, mediaType, size);
-        this.post = post;
-    }
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id", referencedColumnName = "id",

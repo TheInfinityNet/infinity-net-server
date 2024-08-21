@@ -1,7 +1,7 @@
 package com.infinitynet.server.configurations.security_configs;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,13 +22,13 @@ import java.util.stream.Stream;
 @EnableWebSecurity
 @EnableMethodSecurity
 @Slf4j
+@RequiredArgsConstructor
 public class SecurityConfiguration {
 
     @Value("${api.prefix}")
     private String API_PREFIX;
 
-    @Autowired
-    private CustomJwtDecoder customJwtDecoder;
+    private final CustomJwtDecoder customJwtDecoder;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {

@@ -53,7 +53,7 @@ public class PostController {
     @Operation(summary = "Create a new post", description = "Create a new post with content and media files")
     @PostMapping
     @ResponseStatus(CREATED)
-    ResponseEntity<CommonResponse> createPost(@RequestPart @Valid PostCreationRequest request,
+    ResponseEntity<CommonResponse<?>> createPost(@RequestPart @Valid PostCreationRequest request,
                                  @RequestPart(required = false) List<MultipartFile> mediaFiles) {
         SecurityContext context = SecurityContextHolder.getContext();
         User owner = userService.findByEmail(context.getAuthentication().getName());
@@ -72,12 +72,12 @@ public class PostController {
                                                    @RequestParam(defaultValue = "100") String limit) {
         SecurityContext context = SecurityContextHolder.getContext();
         User current = userService.findByEmail(context.getAuthentication().getName());
-        Page<Post> posts = postService.findAllByUser(current, Integer.parseInt(offset), Integer.parseInt(limit));
+        Page<Post> posts = postService.findAll(Integer.parseInt(offset), Integer.parseInt(limit));
         List<PostResponse> items = posts
                 .map(post -> {
                     PostReaction currentUsersReaction;
                     try {
-                        currentUsersReaction = postService.findById(new PostReaction.PostReactionId(current.getId(), post.getId()));
+                        currentUsersReaction = postService.findByPostAndUser(post, current);
                     } catch (PostException e) {
                         currentUsersReaction = null;
                     }
@@ -118,7 +118,7 @@ public class PostController {
 
         PostReaction currentUsersReaction;
         try {
-            currentUsersReaction = postService.findById(new PostReaction.PostReactionId(current.getId(), post.getId()));
+            currentUsersReaction = postService.findByPostAndUser(post, current);
         } catch (PostException e) {
             currentUsersReaction = null;
         }
@@ -130,7 +130,7 @@ public class PostController {
                     String url = fileService.getObjectUrl(media);
                     PostMediaReaction currentUsersMediaReaction;
                     try {
-                        currentUsersMediaReaction = postService.findById(new PostMediaReaction.PostMediaReactionId(current.getId(), media.getId()));
+                        currentUsersMediaReaction = postService.findByPostMediaAndUser(media, current);
                     } catch (PostException e) {
                         currentUsersMediaReaction = null;
                     }
@@ -224,7 +224,7 @@ public class PostController {
         SecurityContext context = SecurityContextHolder.getContext();
         User current = userService.findByEmail(context.getAuthentication().getName());
         Post post = postService.findById(postId);
-        PostReaction reaction = postService.findById(new PostReaction.PostReactionId(current.getId(), post.getId()));
+        PostReaction reaction = postService.findByPostAndUser(post, current);
         postService.deletePostReaction(reaction);
 
         return ResponseEntity.status(OK).body(postMapper.toPostReactionResponse(reaction));
@@ -237,7 +237,7 @@ public class PostController {
         SecurityContext context = SecurityContextHolder.getContext();
         User current = userService.findByEmail(context.getAuthentication().getName());
         PostMedia media = fileService.findById(mediaId);
-        PostMediaReaction reaction = postService.findById(new PostMediaReaction.PostMediaReactionId(current.getId(), media.getId()));
+        PostMediaReaction reaction = postService.findByPostMediaAndUser(media, current);
         postService.deleteMediaPostReaction(reaction);
 
         return ResponseEntity.status(OK).body(postMapper.toPostReactionResponse(reaction));

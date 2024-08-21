@@ -40,11 +40,11 @@ public class Message extends AbstractEntity {
     @JsonManagedReference
     User receiver;
 
-    @OneToMany(mappedBy = "message", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "message", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     List<MessageMedia> messageMedias;
 
-    @OneToMany(mappedBy = "message", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "message", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     List<MessageEmoji> messageEmojis;
 
