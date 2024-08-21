@@ -20,27 +20,9 @@ public interface PostService {
 
     Long countByPostAndReactionType(Post post, ReactionType type);
 
-    Long countByPostMediaAndReactionType(PostMedia media, ReactionType type);
-
     Post createPost(User owner, String content, PostType type, PostVisibility visibility);
 
-    Page<PostReaction> findAllByPostAndReactionType(Post post, ReactionType type, int offset, int limit);
-
-    Page<PostMediaReaction> findAllByPostAndReactionType(PostMedia media, ReactionType type, int offset, int limit);
-
     PostReaction findByPostAndUser(Post post, User user);
-
-    PostMediaReaction findByPostMediaAndUser(PostMedia media, User user);
-
-    PostReaction reactionPost(User current, Post post, ReactionType reactionType);
-
-    PostMediaReaction reactionPostMedia(User current, PostMedia media, ReactionType reactionType);
-
-    void deletePostReaction(PostReaction reaction);
-
-    void deleteMediaPostReaction(PostMediaReaction reaction);
-
-    List<PostMedia> findAllByPost(Post post);
 
     List<PostMedia> previewMedias(Post post);
 

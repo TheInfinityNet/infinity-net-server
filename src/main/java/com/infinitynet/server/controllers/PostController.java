@@ -9,10 +9,10 @@ import com.infinitynet.server.dtos.responses.post.PostReactionResponse;
 import com.infinitynet.server.dtos.responses.post.PostResponse;
 import com.infinitynet.server.entities.*;
 import com.infinitynet.server.enums.ReactionType;
-import com.infinitynet.server.exceptions.post.PostException;
 import com.infinitynet.server.mappers.PostMapper;
 import com.infinitynet.server.services.FileService;
 import com.infinitynet.server.services.PostService;
+import com.infinitynet.server.services.ReactionService;
 import com.infinitynet.server.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -44,6 +44,10 @@ public class PostController {
 
     PostService postService;
 
+    ReactionService<Post, PostReaction> postReactionService;
+
+    ReactionService<PostMedia, PostMediaReaction> postMediaReactionService;
+
     FileService<Post, PostMedia> fileService;
 
     UserService userService;
@@ -65,6 +69,10 @@ public class PostController {
                 .message(getLocalizedMessage("create_post_success")).build());
     }
 
+    List<PostMedia> getPostMedias(Post post) {
+        return postService.previewMedias(post);
+    }
+
     @Operation(summary = "Get news feed", description = "Get news feed of the current user")
     @GetMapping("/news-feed")
     @ResponseStatus(OK)
@@ -75,14 +83,8 @@ public class PostController {
         Page<Post> posts = postService.findAll(Integer.parseInt(offset), Integer.parseInt(limit));
         List<PostResponse> items = posts
                 .map(post -> {
-                    PostReaction currentUsersReaction;
-                    try {
-                        currentUsersReaction = postService.findByPostAndUser(post, current);
-                    } catch (PostException e) {
-                        currentUsersReaction = null;
-                    }
-
-                    List<PostMediaResponse> medias = postService.previewMedias(post)
+                    PostReaction currentUsersReaction = postReactionService.getCurrentUserReaction(post, current);
+                    List<PostMediaResponse> medias = getPostMedias(post)
                             .stream()
                             .map(media -> {
                                 PostMediaResponse dto = postMapper.toPostMediaResponse(media);
@@ -93,7 +95,7 @@ public class PostController {
                             .toList();
 
                     PostResponse response = postMapper.toPostResponse(post);
-                    response.setReactionCounts(postService.countByPostAndReactionType(post, null));
+                    response.setReactionCounts(postReactionService.countByOwnerAndReactionType(post, null));
                     response.setCurrentUserReaction(postMapper.toPostReactionResponse(currentUsersReaction));
                     response.setMedias(medias);
                     return response;
@@ -116,33 +118,23 @@ public class PostController {
         User current = userService.findByEmail(context.getAuthentication().getName());
         Post post = postService.findById(postId);
 
-        PostReaction currentUsersReaction;
-        try {
-            currentUsersReaction = postService.findByPostAndUser(post, current);
-        } catch (PostException e) {
-            currentUsersReaction = null;
-        }
-
-        List<PostMediaResponse> medias = postService.findAllByPost(post)
+        PostReaction currentUsersReaction = postReactionService.getCurrentUserReaction(post, current);
+        List<PostMediaResponse> medias = getPostMedias(post)
                 .stream()
                 .map(media -> {
                     PostMediaResponse dto = postMapper.toPostMediaResponse(media);
                     String url = fileService.getObjectUrl(media);
-                    PostMediaReaction currentUsersMediaReaction;
-                    try {
-                        currentUsersMediaReaction = postService.findByPostMediaAndUser(media, current);
-                    } catch (PostException e) {
-                        currentUsersMediaReaction = null;
-                    }
+                    PostMediaReaction currentUsersMediaReaction =
+                            postMediaReactionService.getCurrentUserReaction(media, current);
                     dto.setUrl(url);
                     dto.setCurrentUserReaction(postMapper.toPostReactionResponse(currentUsersMediaReaction));
-                    dto.setReactionCounts(postService.countByPostMediaAndReactionType(media, null));
+                    dto.setReactionCounts(postMediaReactionService.countByOwnerAndReactionType(media, null));
                     return dto;
                 })
                 .toList();
 
         PostResponse response = postMapper.toPostResponse(post);
-        response.setReactionCounts(postService.countByPostAndReactionType(post, null));
+        response.setReactionCounts(postReactionService.countByOwnerAndReactionType(post, null));
         response.setCurrentUserReaction(postMapper.toPostReactionResponse(currentUsersReaction));
         response.setMedias(medias);
         return ResponseEntity.status(OK).body(response);
@@ -157,8 +149,8 @@ public class PostController {
                                                       @RequestParam(defaultValue = "0") String offset,
                                                       @RequestParam(defaultValue = "100") String limit) {
         Post post = postService.findById(postId);
-        Page<PostReaction> reactions =
-                postService.findAllByPostAndReactionType(post, type, Integer.parseInt(offset), Integer.parseInt(limit));
+        Page<PostReaction> reactions = postReactionService
+                .findAllByOwnerAndReactionType(post, type, Integer.parseInt(offset), Integer.parseInt(limit));
         List<PostReactionResponse> items = reactions
                 .map(postMapper::toPostReactionResponse)
                 .toList();
@@ -178,8 +170,8 @@ public class PostController {
                                                                             @RequestParam(defaultValue = "0") String offset,
                                                                             @RequestParam(defaultValue = "100") String limit) {
         PostMedia media = fileService.findById(mediaId);
-        Page<PostMediaReaction> reactions =
-                postService.findAllByPostAndReactionType(media, type, Integer.parseInt(offset), Integer.parseInt(limit));
+        Page<PostMediaReaction> reactions = postMediaReactionService
+                .findAllByOwnerAndReactionType(media, type, Integer.parseInt(offset), Integer.parseInt(limit));
         List<PostReactionResponse> items = reactions
                 .map(postMapper::toPostReactionResponse)
                 .toList();
@@ -199,7 +191,7 @@ public class PostController {
         SecurityContext context = SecurityContextHolder.getContext();
         User current = userService.findByEmail(context.getAuthentication().getName());
         Post post = postService.findById(postId);
-        PostReaction reaction = postService.reactionPost(current, post, type);
+        PostReaction reaction = postReactionService.react(post, current, type);
 
         return ResponseEntity.status(CREATED).body(postMapper.toPostReactionResponse(reaction));
     }
@@ -211,7 +203,7 @@ public class PostController {
         SecurityContext context = SecurityContextHolder.getContext();
         User current = userService.findByEmail(context.getAuthentication().getName());
         PostMedia media = fileService.findById(mediaId);
-        PostMediaReaction reaction = postService.reactionPostMedia(current, media, type);
+        PostMediaReaction reaction = postMediaReactionService.react(media, current, type);
 
         return ResponseEntity.status(CREATED).body(postMapper.toPostReactionResponse(reaction));
     }
@@ -224,8 +216,8 @@ public class PostController {
         SecurityContext context = SecurityContextHolder.getContext();
         User current = userService.findByEmail(context.getAuthentication().getName());
         Post post = postService.findById(postId);
-        PostReaction reaction = postService.findByPostAndUser(post, current);
-        postService.deletePostReaction(reaction);
+        PostReaction reaction = postReactionService.findByOwnerAndUser(post, current);
+        postReactionService.deleteReaction(reaction);
 
         return ResponseEntity.status(OK).body(postMapper.toPostReactionResponse(reaction));
     }
@@ -237,8 +229,8 @@ public class PostController {
         SecurityContext context = SecurityContextHolder.getContext();
         User current = userService.findByEmail(context.getAuthentication().getName());
         PostMedia media = fileService.findById(mediaId);
-        PostMediaReaction reaction = postService.findByPostMediaAndUser(media, current);
-        postService.deleteMediaPostReaction(reaction);
+        PostMediaReaction reaction = postMediaReactionService.findByOwnerAndUser(media, current);
+        postMediaReactionService.deleteReaction(reaction);
 
         return ResponseEntity.status(OK).body(postMapper.toPostReactionResponse(reaction));
     }

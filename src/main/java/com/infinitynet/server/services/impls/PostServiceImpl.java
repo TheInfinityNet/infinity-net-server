@@ -4,7 +4,6 @@ import com.infinitynet.server.entities.*;
 import com.infinitynet.server.enums.PostType;
 import com.infinitynet.server.enums.PostVisibility;
 import com.infinitynet.server.enums.ReactionType;
-import com.infinitynet.server.exceptions.post.PostErrorCode;
 import com.infinitynet.server.exceptions.post.PostException;
 import com.infinitynet.server.repositories.*;
 import com.infinitynet.server.services.PostService;
@@ -15,7 +14,6 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -66,13 +64,6 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public Long countByPostMediaAndReactionType(PostMedia media, ReactionType type) {
-        return (type != null)
-                ? postMediaReactionRepository.countByPostMediaAndReactionType(media, type)
-                : postMediaReactionRepository.countByPostMedia(media);
-    }
-
-    @Override
     @Transactional
     public Post createPost(User owner, String content, PostType type, PostVisibility visibility) {
         return postRepository.save(Post.builder()
@@ -84,74 +75,9 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public Page<PostReaction> findAllByPostAndReactionType(Post post, ReactionType type, int offset, int limit) {
-        Pageable pageable = PageRequest.of(offset, limit, Sort.by("createdAt").descending());
-        return (type != null)
-                ? postReactionRepository.findAllByPostAndReactionType(post, type, pageable)
-                : postReactionRepository.findAllByPost(post, pageable);
-    }
-
-    @Override
-    public Page<PostMediaReaction> findAllByPostAndReactionType(PostMedia media, ReactionType type, int offset, int limit) {
-        Pageable pageable = PageRequest.of(offset, limit, Sort.by("createdAt").descending());
-        return (type != null)
-                ? postMediaReactionRepository.findAllByPostMediaAndReactionType(media, type, pageable)
-                : postMediaReactionRepository.findAllByPostMedia(media, pageable);
-    }
-
-    @Override
     public PostReaction findByPostAndUser(Post post, User user) {
         return postReactionRepository.findByPostAndUser(post, user)
                 .orElseThrow(() -> new PostException(POST_REACTION_NOT_FOUND, NOT_FOUND));
-    }
-
-    @Override
-    public PostMediaReaction findByPostMediaAndUser(PostMedia media, User user) {
-        return postMediaReactionRepository.findByPostMediaAndUser(media, user)
-                .orElseThrow(() -> new PostException(POST_REACTION_NOT_FOUND, NOT_FOUND));
-    }
-
-    @Override
-    @Transactional
-    public PostReaction reactionPost(User current, Post post, ReactionType reactionType) {
-        if (post.getPostVisibility().equals(PostVisibility.ONLY_ME)) {
-            if (!current.getId().equals(post.getUser().getId()))
-                throw new PostException(PostErrorCode.POST_NOT_FOUND, NOT_FOUND);
-        }
-        return postReactionRepository.save(PostReaction.builder()
-                .user(current)
-                .post(post)
-                .reactionType(reactionType)
-                .build());
-    }
-
-    @Override
-    public PostMediaReaction reactionPostMedia(User current, PostMedia media, ReactionType reactionType) {
-        if (media.getPost().getPostVisibility().equals(PostVisibility.ONLY_ME)) {
-            if (!current.getId().equals(media.getPost().getUser().getId()))
-                throw new PostException(PostErrorCode.POST_NOT_FOUND, NOT_FOUND);
-        }
-        return postMediaReactionRepository.save(PostMediaReaction.builder()
-                .user(current)
-                .postMedia(media)
-                .reactionType(reactionType)
-                .build());
-    }
-
-    @Override
-    @Transactional
-    public void deletePostReaction(PostReaction reaction) {
-        postReactionRepository.delete(reaction);
-    }
-
-    @Override
-    public void deleteMediaPostReaction(PostMediaReaction reaction) {
-        postMediaReactionRepository.delete(reaction);
-    }
-
-    @Override
-    public List<PostMedia> findAllByPost(Post post) {
-        return postMediaRepository.findAllByPostOrderByCreatedAtDesc(post);
     }
 
     @Override
