@@ -21,8 +21,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import lombok.AccessLevel;
@@ -84,7 +82,7 @@ public class UserController {
                 .map(post -> {
                     PostReaction currentUsersReaction;
                     try {
-                        currentUsersReaction = postService.findById(new PostReaction.PostReactionId(current.getId(), post.getId()));
+                        currentUsersReaction = postService.findByPostAndUser(post, current);
                     } catch (PostException e) {
                         currentUsersReaction = null;
                     }

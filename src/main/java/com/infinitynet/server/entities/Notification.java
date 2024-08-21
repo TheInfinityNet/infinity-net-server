@@ -1,18 +1,22 @@
 package com.infinitynet.server.entities;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.SuperBuilder;
+
+import java.util.List;
 
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
 @Table(name = "notifications")
+@Inheritance(strategy = InheritanceType.JOINED)
 public class Notification extends AbstractEntity {
 
     @Id
@@ -25,20 +29,14 @@ public class Notification extends AbstractEntity {
     @Column
     boolean readStatus;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "id",
-            foreignKey = @ForeignKey(name = "fk_notifications_users",
-                    foreignKeyDefinition = "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false,
-            updatable = false)
-    @JsonManagedReference
-    User user;
+    @Column(nullable = false)
+    String thumbnail;
 
-    @OneToOne
-    @JoinColumn(name = "event_id", referencedColumnName = "id",
-            foreignKey = @ForeignKey(name = "fk_notifications_events",
-                    foreignKeyDefinition = "FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE ON UPDATE CASCADE"), nullable = false,
-            updatable = false)
-    @JsonManagedReference
-    Event event;
+    @Column(nullable = false)
+    String description;
+
+    @OneToMany(mappedBy = "notification", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonBackReference
+    List<NotificationConsumer> notificationConsumers;
 
 }

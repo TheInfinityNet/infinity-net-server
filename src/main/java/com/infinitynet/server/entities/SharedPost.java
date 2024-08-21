@@ -5,9 +5,11 @@ import com.infinitynet.server.enums.SharedPostType;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -39,7 +41,12 @@ public class SharedPost extends Post {
     @Column(name = "shared_post_type", nullable = false)
     SharedPostType sharedPostType;
 
-    @Column(name = "shared_to", nullable = false)
-    String sharedTo;
+    @ManyToOne
+    @JoinColumn(name = "shared_user_id", referencedColumnName = "id",
+            foreignKey = @ForeignKey(name = "fk_shared_user",
+                    foreignKeyDefinition = "FOREIGN KEY (shared_user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE"),
+            updatable = false)
+    @JsonManagedReference
+    User sharedUser;
 
 }

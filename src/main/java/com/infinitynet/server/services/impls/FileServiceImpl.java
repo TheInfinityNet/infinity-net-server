@@ -83,10 +83,19 @@ public class FileServiceImpl<O, F> implements FileService<O, F> {
             kafkaTemplate.send(KAFKA_TOPIC_HANDLE_MEDIA, UPLOAD
                     + ":" + backupPath + ":" + file.getSize() + ":" + file.getContentType());
 
-            results.add((F) new PostMedia(fileId, backupPath, file.getContentType(), file.getSize(), (Post) owner));
+            switch (type) {
+                case POST -> results.add((F) PostMedia.builder()
+                        .post((Post) owner)
+                        .objectKey(backupPath)
+                        .contentType(file.getContentType())
+                        .size(file.getSize())
+                        .build());
+            }
         }
 
-        postMediaRepository.saveAll((List<PostMedia>) results);
+        switch (type) {
+            case POST -> postMediaRepository.saveAll((List<PostMedia>) results);
+        }
     }
 
     @Override

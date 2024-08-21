@@ -10,7 +10,6 @@ import com.infinitynet.server.dtos.others.Tokens;
 import com.infinitynet.server.dtos.requests.authentication.*;
 import com.infinitynet.server.dtos.responses.authentication.*;
 import com.infinitynet.server.entities.User;
-import com.infinitynet.server.exceptions.authentication.AuthenticationErrorCode;
 import com.infinitynet.server.exceptions.authentication.AuthenticationException;
 import com.infinitynet.server.mappers.UserMapper;
 import com.infinitynet.server.services.AuthenticationService;
@@ -118,14 +117,11 @@ public class AuthenticationController {
     @RateLimit(limitKeyTypes = { BY_TOKEN })
     ResponseEntity<RefreshResponse> refresh(@RequestBody @Valid RefreshRequest request,
                                             HttpServletRequest httpServletRequest) {
-        User user = null;
+        User user;
         try {
             user = authenticationService.refresh(request.refreshToken(), httpServletRequest);
 
-        } catch (ParseException e) {
-            throw new AuthenticationException(INVALID_SIGNATURE, UNPROCESSABLE_ENTITY);
-
-        } catch (JOSEException e) {
+        } catch (ParseException | JOSEException e) {
             throw new AuthenticationException(INVALID_SIGNATURE, UNPROCESSABLE_ENTITY);
         }
 
@@ -144,10 +140,7 @@ public class AuthenticationController {
         try {
             authenticationService.signOut(request.accessToken(), request.refreshToken());
 
-        } catch (ParseException e) {
-            throw new AuthenticationException(INVALID_SIGNATURE, UNPROCESSABLE_ENTITY);
-
-        } catch (JOSEException e) {
+        } catch (ParseException | JOSEException e) {
             throw new AuthenticationException(INVALID_SIGNATURE, UNPROCESSABLE_ENTITY);
         }
     }

@@ -6,7 +6,6 @@ import org.apache.commons.io.FilenameUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StreamUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -27,10 +26,8 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 @Service
 public class LocalStorageServiceImpl implements LocalStorageService {
 
-    private final Path LOCAL_STORAGE_ROOT_PATH = Paths.get(LOCAL_STORAGE_ROOT_FOLDER);
-
     public LocalStorageServiceImpl() {
-        createNewFolder(LOCAL_STORAGE_ROOT_PATH);
+        createNewFolder(Paths.get(LOCAL_STORAGE_ROOT_FOLDER));
     }
 
     @Override
@@ -72,7 +69,7 @@ public class LocalStorageServiceImpl implements LocalStorageService {
     @Override
     public InputStream readFile(String filePath) {
         Path file = Paths.get(LOCAL_STORAGE_ROOT_FOLDER + "/" + filePath);
-        Resource resource = null;
+        Resource resource;
         try {
             resource = new UrlResource(file.toUri());
 
@@ -107,9 +104,8 @@ public class LocalStorageServiceImpl implements LocalStorageService {
     public Stream<Path> loadAllFromFolder(String folderPath) {
         Path pathToFolder = Paths.get(folderPath);
 
-        try {
-            return Files.walk(pathToFolder, 1)
-                    .filter(path -> !path.equals(pathToFolder) && !path.toString().contains("._"))
+        try(Stream<Path> paths = Files.walk(pathToFolder, 1)) {
+            return paths.filter(path -> !path.equals(pathToFolder) && !path.toString().contains("._"))
                     .map(pathToFolder::relativize);
 
         } catch (IOException e) {
@@ -119,7 +115,7 @@ public class LocalStorageServiceImpl implements LocalStorageService {
 
     @Override
     public void deleteFile(String filePath) {
-        boolean isDeleted = false;
+        boolean isDeleted;
         try {
             isDeleted = Files.deleteIfExists(Paths.get(LOCAL_STORAGE_ROOT_FOLDER + "/" + filePath));
 
@@ -136,8 +132,8 @@ public class LocalStorageServiceImpl implements LocalStorageService {
 
         if (!Files.exists(pathToFolder)) throw new FileStorageException(FOLDER_NOT_FOUND, BAD_REQUEST);
 
-        try {
-            Files.walk(pathToFolder).sorted(Comparator.reverseOrder())
+        try(Stream<Path> paths = Files.walk(pathToFolder)) {
+                paths.sorted(Comparator.reverseOrder())
                     .forEach(path -> {
                         try {
                             Files.delete(path);

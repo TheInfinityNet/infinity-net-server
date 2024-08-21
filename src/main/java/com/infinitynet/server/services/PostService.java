@@ -28,9 +28,9 @@ public interface PostService {
 
     Page<PostMediaReaction> findAllByPostAndReactionType(PostMedia media, ReactionType type, int offset, int limit);
 
-    PostReaction findById(PostReaction.PostReactionId id);
+    PostReaction findByPostAndUser(Post post, User user);
 
-    PostMediaReaction findById(PostMediaReaction.PostMediaReactionId id);
+    PostMediaReaction findByPostMediaAndUser(PostMedia media, User user);
 
     PostReaction reactionPost(User current, Post post, ReactionType reactionType);
 

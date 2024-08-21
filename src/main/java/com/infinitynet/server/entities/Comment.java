@@ -66,7 +66,7 @@ public class Comment extends AbstractEntity {
 
     @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
-    List<CommentMention> commentMentions;
+    List<CommentTag> commentTags;
 
     @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference

@@ -19,6 +19,7 @@ import java.util.List;
 @Entity
 @Table(name = "users")
 public class User extends AbstractEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;
@@ -71,17 +72,9 @@ public class User extends AbstractEntity {
     @JsonBackReference
     List<Setting> settings;
 
-    @OneToMany(mappedBy = "triggeredBy", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "consumer", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonBackReference
-    List<Event> events;
-
-    @OneToMany(mappedBy = "attendee", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonBackReference
-    List<EventAttendee> eventAttendees;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonBackReference
-    List<Notification> notifications;
+    List<NotificationConsumer> notificationConsumers;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonBackReference
@@ -111,13 +104,17 @@ public class User extends AbstractEntity {
     @JsonBackReference
     List<Post> posts;
 
+    @OneToMany(mappedBy = "sharedUser", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonBackReference
+    List<SharedPost> sharedPosts;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonBackReference
     List<PostReaction> postReactions;
 
-    @OneToMany(mappedBy = "mentionedUser", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "taggedUser", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonBackReference
-    List<PostMention> postMentions;
+    List<PostTag> postTags;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonBackReference
@@ -127,9 +124,9 @@ public class User extends AbstractEntity {
     @JsonBackReference
     List<CommentReaction> commentReactions;
 
-    @OneToMany(mappedBy = "mentionedUser", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "taggedUser", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonBackReference
-    List<CommentMention> commentMention;
+    List<CommentTag> commentTag;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonBackReference

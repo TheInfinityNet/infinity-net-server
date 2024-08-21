@@ -65,36 +65,27 @@ public class GlobalExceptionHandler {
                 case VALIDATION_ERROR -> {
                     errors.put("email", getLocalizedMessage(EXPIRED_PASSWORD.getMessage()));
                     errors.put("password", getLocalizedMessage(EXPIRED_PASSWORD.getMessage()));
+                }
+                case EXPIRED_PASSWORD -> errors.put("password", getLocalizedMessage(EXPIRED_PASSWORD.getMessage()));
 
-                } case EXPIRED_PASSWORD -> {
-                    errors.put("password", getLocalizedMessage(EXPIRED_PASSWORD.getMessage()));
+                case TOKEN_INVALID -> errors.put("token", getLocalizedMessage(TOKEN_INVALID.getMessage()));
 
-                } case TOKEN_INVALID -> {
-                    errors.put("token", getLocalizedMessage(TOKEN_INVALID.getMessage()));
+                case WRONG_PASSWORD -> errors.put("password", getLocalizedMessage(WRONG_PASSWORD.getMessage()));
 
-                } case WRONG_PASSWORD -> {
-                    errors.put("password", getLocalizedMessage(WRONG_PASSWORD.getMessage()));
+                case PASSWORD_MIS_MATCH -> errors.put("password", getLocalizedMessage(PASSWORD_MIS_MATCH.getMessage()));
 
-                } case PASSWORD_MIS_MATCH -> {
-                    errors.put("password", getLocalizedMessage(PASSWORD_MIS_MATCH.getMessage()));
+                case EMAIL_ALREADY_IN_USE -> errors.put("email", getLocalizedMessage(EMAIL_ALREADY_IN_USE.getMessage()));
 
-                } case EMAIL_ALREADY_IN_USE -> {
-                    errors.put("email", getLocalizedMessage(EMAIL_ALREADY_IN_USE.getMessage()));
+                case WEAK_PASSWORD -> errors.put("password", getLocalizedMessage(WEAK_PASSWORD.getMessage()));
 
-                } case WEAK_PASSWORD -> {
-                    errors.put("password", getLocalizedMessage(WEAK_PASSWORD.getMessage()));
+                case INVALID_EMAIL -> errors.put("email", getLocalizedMessage(INVALID_EMAIL.getMessage()));
 
-                } case INVALID_EMAIL -> {
-                    errors.put("email", getLocalizedMessage(INVALID_EMAIL.getMessage()));
+                case TERMS_NOT_ACCEPTED -> errors.put("termsAccepted", getLocalizedMessage(TERMS_NOT_ACCEPTED.getMessage()));
 
-                } case TERMS_NOT_ACCEPTED -> {
-                    errors.put("termsAccepted", getLocalizedMessage(TERMS_NOT_ACCEPTED.getMessage()));
+                case CODE_INVALID -> errors.put("code", getLocalizedMessage(CODE_INVALID.getMessage()));
 
-                } case CODE_INVALID -> {
-                    errors.put("code", getLocalizedMessage(CODE_INVALID.getMessage()));
-
-                } default -> errors = null;
-            };
+                default -> errors = null;
+            }
 
         } catch (NoSuchMessageException exception1) {
             CommonResponse<?> commonResponse1 = new CommonResponse<>();
@@ -154,6 +145,7 @@ public class GlobalExceptionHandler {
                     CommonResponse.builder()
                             .errorCode(VALIDATION_ERROR.getCode())
                             .message(getLocalizedMessage(VALIDATION_ERROR.getMessage()))
+                            .errors(errors)
                             .build()
             );
 

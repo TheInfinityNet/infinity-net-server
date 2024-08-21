@@ -101,14 +101,14 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public PostReaction findById(PostReaction.PostReactionId id) {
-        return postReactionRepository.findById(id)
+    public PostReaction findByPostAndUser(Post post, User user) {
+        return postReactionRepository.findByPostAndUser(post, user)
                 .orElseThrow(() -> new PostException(POST_REACTION_NOT_FOUND, NOT_FOUND));
     }
 
     @Override
-    public PostMediaReaction findById(PostMediaReaction.PostMediaReactionId id) {
-        return postMediaReactionRepository.findById(id)
+    public PostMediaReaction findByPostMediaAndUser(PostMedia media, User user) {
+        return postMediaReactionRepository.findByPostMediaAndUser(media, user)
                 .orElseThrow(() -> new PostException(POST_REACTION_NOT_FOUND, NOT_FOUND));
     }
 
@@ -120,7 +120,6 @@ public class PostServiceImpl implements PostService {
                 throw new PostException(PostErrorCode.POST_NOT_FOUND, NOT_FOUND);
         }
         return postReactionRepository.save(PostReaction.builder()
-                .id(new PostReaction.PostReactionId(current.getId(), post.getId()))
                 .user(current)
                 .post(post)
                 .reactionType(reactionType)
@@ -134,7 +133,6 @@ public class PostServiceImpl implements PostService {
                 throw new PostException(PostErrorCode.POST_NOT_FOUND, NOT_FOUND);
         }
         return postMediaReactionRepository.save(PostMediaReaction.builder()
-                .id(new PostMediaReaction.PostMediaReactionId(current.getId(), media.getId()))
                 .user(current)
                 .postMedia(media)
                 .reactionType(reactionType)
