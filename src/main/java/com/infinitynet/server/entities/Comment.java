@@ -28,7 +28,7 @@ public class Comment extends AbstractEntity {
     @ManyToOne
     @JoinColumn(name = "post_id", referencedColumnName = "id",
             foreignKey = @ForeignKey(name = "fk_comments_posts",
-                    foreignKeyDefinition = "FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE"), nullable = false,
+                    foreignKeyDefinition = "FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE"),
             updatable = false)
     @JsonManagedReference
     Post post;

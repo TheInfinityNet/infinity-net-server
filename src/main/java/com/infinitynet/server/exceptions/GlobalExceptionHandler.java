@@ -113,16 +113,16 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(exception.getHttpStatus()).body(commonResponse);
     }
 
-    // Handle file storage exceptions
+    // Handle post exceptions
     @ExceptionHandler(value = PostException.class)
     ResponseEntity<CommonResponse<?>> handlingPostExceptions(PostException exception) {
-        PostErrorCode authenticationErrorCode = exception.getPostErrorCode();
+        PostErrorCode postErrorCode = exception.getPostErrorCode();
         CommonResponse<?> commonResponse = new CommonResponse<>();
 
-        commonResponse.setErrorCode(authenticationErrorCode.getCode());
-        commonResponse.setMessage(getLocalizedMessage(authenticationErrorCode.getMessage()));
+        commonResponse.setErrorCode(postErrorCode.getCode());
+        commonResponse.setMessage(getLocalizedMessage(postErrorCode.getMessage()));
         if (exception.getMoreInfo() != null) {
-            commonResponse.setMessage(getLocalizedMessage(authenticationErrorCode.getMessage(), exception.getMoreInfo()));
+            commonResponse.setMessage(getLocalizedMessage(postErrorCode.getMessage(), exception.getMoreInfo()));
         }
 
         return ResponseEntity.status(exception.getHttpStatus()).body(commonResponse);

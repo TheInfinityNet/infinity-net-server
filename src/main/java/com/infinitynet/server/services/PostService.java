@@ -44,4 +44,9 @@ public interface PostService {
 
     List<PostMedia> previewMedias(Post post);
 
+    Comment createComment(User user, Post post, String content);
+
+    Comment replyComment(User user, Comment parentComment, String content);
+
+
 }

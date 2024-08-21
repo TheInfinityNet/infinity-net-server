@@ -6,10 +6,7 @@ import com.infinitynet.server.enums.PostVisibility;
 import com.infinitynet.server.enums.ReactionType;
 import com.infinitynet.server.exceptions.post.PostErrorCode;
 import com.infinitynet.server.exceptions.post.PostException;
-import com.infinitynet.server.repositories.PostMediaReactionRepository;
-import com.infinitynet.server.repositories.PostMediaRepository;
-import com.infinitynet.server.repositories.PostReactionRepository;
-import com.infinitynet.server.repositories.PostRepository;
+import com.infinitynet.server.repositories.*;
 import com.infinitynet.server.services.PostService;
 import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
@@ -25,8 +22,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 import static com.infinitynet.server.enums.PostType.USER_POST;
-import static com.infinitynet.server.exceptions.post.PostErrorCode.POST_NOT_FOUND;
-import static com.infinitynet.server.exceptions.post.PostErrorCode.POST_REACTION_NOT_FOUND;
+import static com.infinitynet.server.exceptions.post.PostErrorCode.*;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @Service
@@ -42,6 +39,8 @@ public class PostServiceImpl implements PostService {
     PostMediaReactionRepository postMediaReactionRepository;
 
     PostMediaRepository postMediaRepository;
+
+    CommentRepository commentRepository;
 
     @Override
     public Post findById(String id) {
@@ -158,6 +157,29 @@ public class PostServiceImpl implements PostService {
     @Override
     public List<PostMedia> previewMedias(Post post) {
         return postMediaRepository.previewMedias(post);
+    }
+
+    @Override
+    public Comment createComment(User user, Post post, String content) {
+        return null;
+    }
+
+    @Override
+    public Comment replyComment(User user, Comment parentComment, String content) {
+        Comment comment = Comment.builder()
+                .user(user)
+                .post(parentComment.getPost())
+                .parentComment(parentComment)
+                .build();
+
+        Comment oldComment = commentRepository.findById("skljdfskjfh")
+                .orElseThrow(() -> new PostException(COMMENT_NOT_FOUND, BAD_REQUEST));
+
+        oldComment.setContent(content);
+
+        commentRepository.save(oldComment);
+
+        return null;
     }
 
 }
