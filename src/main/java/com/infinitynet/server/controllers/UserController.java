@@ -6,14 +6,12 @@ import com.infinitynet.server.dtos.responses.PaginateResponse;
 import com.infinitynet.server.dtos.responses.UserInfoResponse;
 import com.infinitynet.server.dtos.responses.post.PostMediaResponse;
 import com.infinitynet.server.dtos.responses.post.PostResponse;
-import com.infinitynet.server.entities.Post;
-import com.infinitynet.server.entities.PostMedia;
-import com.infinitynet.server.entities.PostReaction;
-import com.infinitynet.server.entities.User;
+import com.infinitynet.server.entities.*;
 import com.infinitynet.server.exceptions.post.PostException;
 import com.infinitynet.server.mappers.PostMapper;
 import com.infinitynet.server.services.FileService;
 import com.infinitynet.server.services.PostService;
+import com.infinitynet.server.services.ReactionService;
 import com.infinitynet.server.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -43,6 +41,8 @@ public class UserController {
     UserService userService;
 
     PostService postService;
+
+    ReactionService<Post, PostReaction> postReactionService;
 
     FileService<Post, PostMedia> fileService;
 
@@ -98,7 +98,7 @@ public class UserController {
                             .toList();
 
                     PostResponse response = postMapper.toPostResponse(post);
-                    response.setReactionCounts(postService.countByPostAndReactionType(post, null));
+                    response.setReactionCounts(postReactionService.countByOwnerAndReactionType(post, null));
                     response.setCurrentUserReaction(postMapper.toPostReactionResponse(currentUsersReaction));
                     response.setMedias(medias);
                     return response;

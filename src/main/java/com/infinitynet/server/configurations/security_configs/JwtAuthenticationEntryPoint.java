@@ -7,6 +7,7 @@ import com.infinitynet.server.exceptions.authentication.AuthenticationErrorCode;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
@@ -17,6 +18,7 @@ import static com.infinitynet.server.components.Translator.getLocalizedMessage;
 import static com.infinitynet.server.exceptions.authentication.AuthenticationErrorCode.TOKEN_MISSING;
 
 // This class is used to handle the exception when the user is not authenticated
+@Slf4j
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     @Override
     public void commence(
@@ -34,6 +36,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
         ObjectMapper objectMapper = new ObjectMapper();
 
+        log.error("Unauthorized error: {}", authException.getMessage());
         response.getWriter().write(objectMapper.writeValueAsString(commonResponse));
         response.flushBuffer();
     }

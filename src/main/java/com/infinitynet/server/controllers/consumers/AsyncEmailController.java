@@ -18,7 +18,6 @@ import java.util.List;
 import static com.infinitynet.server.Constants.KAFKA_TOPIC_SEND_MAIL;
 import static com.infinitynet.server.enums.VerificationType.VERIFY_EMAIL_BY_CODE;
 
-@RestController
 @Component
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -27,7 +26,10 @@ public class AsyncEmailController {
 
     EmailService emailService;
 
-    @KafkaListener(topics = KAFKA_TOPIC_SEND_MAIL, groupId = "${spring.kafka.mail-consumer.group-id}")
+    @KafkaListener(
+            topics = KAFKA_TOPIC_SEND_MAIL,
+            groupId = "${spring.kafka.mail-consumer.group-id}",
+            errorHandler = "kafkaListenerErrorHandler")
     public void listenNotificationDelivery(String message) {
         String type = message.split(":")[0];
         String email = message.split(":")[1];

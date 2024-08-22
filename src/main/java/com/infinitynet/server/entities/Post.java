@@ -3,7 +3,7 @@ package com.infinitynet.server.entities;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.infinitynet.server.enums.PostType;
-import com.infinitynet.server.enums.PostVisibility;
+import com.infinitynet.server.enums.PrivacySetting;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -29,9 +29,9 @@ public class Post extends AbstractEntity {
     @Column(nullable = false)
     String content;
 
-    @Column(name = "post_visibility", nullable = false)
+    @Column(name = "privacy_setting", nullable = false)
     @Enumerated(EnumType.STRING)
-    PostVisibility postVisibility;
+    PrivacySetting privacySetting;
 
     @Column(name = "post_type", nullable = false)
     @Enumerated(EnumType.STRING)

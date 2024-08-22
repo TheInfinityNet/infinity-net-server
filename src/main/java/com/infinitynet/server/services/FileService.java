@@ -1,6 +1,5 @@
 package com.infinitynet.server.services;
 
-import com.infinitynet.server.enums.MediaOwnerType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -13,10 +12,10 @@ public interface FileService<O, F> {
 
     String getObjectUrl(F file);
 
-    void uploadFiles(O owner, MediaOwnerType type, List<MultipartFile> files);
+    void uploadFiles(O owner, List<MultipartFile> files);
 
     void deleteFile(String fileId);
 
-    void deleteFiles(String ownerId, MediaOwnerType type);
+    void deleteFolder(O owner);
 
 }

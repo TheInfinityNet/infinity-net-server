@@ -2,6 +2,7 @@ package com.infinitynet.server.controllers;
 
 import com.infinitynet.server.dtos.others.Pagination;
 import com.infinitynet.server.dtos.requests.post.PostCreationRequest;
+import com.infinitynet.server.dtos.requests.post.PostUpdateRequest;
 import com.infinitynet.server.dtos.responses.CommonResponse;
 import com.infinitynet.server.dtos.responses.PaginateResponse;
 import com.infinitynet.server.dtos.responses.post.PostMediaResponse;
@@ -31,7 +32,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 import static com.infinitynet.server.components.Translator.getLocalizedMessage;
-import static com.infinitynet.server.enums.MediaOwnerType.POST;
 import static org.springframework.http.HttpStatus.*;
 
 @RestController
@@ -54,23 +54,49 @@ public class PostController {
 
     PostMapper postMapper = PostMapper.INSTANCE;
 
-    @Operation(summary = "Create a new post", description = "Create a new post with content and media files")
+    /*_____________________________________________________POST__________________________________________________________*/
+    @Operation(summary = "Create a new post", description = "Create a new post with content, privacy setting and media files")
     @PostMapping
     @ResponseStatus(CREATED)
     ResponseEntity<CommonResponse<?>> createPost(@RequestPart @Valid PostCreationRequest request,
                                  @RequestPart(required = false) List<MultipartFile> mediaFiles) {
         SecurityContext context = SecurityContextHolder.getContext();
         User owner = userService.findByEmail(context.getAuthentication().getName());
-        Post newPost = postService.createPost(owner, request.content(), null, request.visibility());
+        Post newPost = postService.createPost(owner, request.content(), null, request.privacySetting());
 
-        if (mediaFiles != null && !mediaFiles.isEmpty()) fileService.uploadFiles(newPost, POST, mediaFiles);
+        if (mediaFiles != null && !mediaFiles.isEmpty()) fileService.uploadFiles(newPost, mediaFiles);
 
         return ResponseEntity.status(CREATED).body(CommonResponse.builder()
-                .message(getLocalizedMessage("create_post_success")).build());
+                .message(getLocalizedMessage("create_post_success", newPost.getId())).build());
     }
 
-    List<PostMedia> getPostMedias(Post post) {
-        return postService.previewMedias(post);
+    @Operation(summary = "Update a post", description = "Update a post with new content, privacy setting and media files")
+    @PutMapping("/{postId}")
+    @ResponseStatus(OK)
+    ResponseEntity<CommonResponse<?>> updatePost(@PathVariable String postId,
+                                 @RequestPart @Valid PostUpdateRequest request,
+                                 @RequestPart(required = false) List<MultipartFile> additionalFiles) {
+        Post post = postService.findById(postId);
+        postService.updatePost(postId, request.content(), request.privacySetting());
+
+        if (request.deletedFiles() != null && !request.deletedFiles().isEmpty())
+            request.deletedFiles().forEach(fileService::deleteFile);
+
+        if (additionalFiles != null && !additionalFiles.isEmpty()) fileService.uploadFiles(post, additionalFiles);
+
+        return ResponseEntity.status(OK).body(CommonResponse.builder()
+                .message(getLocalizedMessage("update_post_success", postId)).build());
+    }
+
+    @Operation(summary = "Delete a post", description = "Delete a post by id")
+    @DeleteMapping("/{postId}")
+    @ResponseStatus(OK)
+    ResponseEntity<CommonResponse<?>> deletePost(@PathVariable String postId) {
+        Post deletedPost = postService.findById(postId);
+        postService.deletePost(deletedPost);
+        fileService.deleteFolder(deletedPost);
+        return ResponseEntity.status(OK).body(CommonResponse.builder()
+                .message(getLocalizedMessage("delete_post_success", postId)).build());
     }
 
     @Operation(summary = "Get news feed", description = "Get news feed of the current user")
@@ -108,7 +134,6 @@ public class PostController {
                 .build()
         );
     }
-
 
     @Operation(summary = "Get post by id", description = "Get a post by id")
     @GetMapping("/{postId}")
@@ -235,6 +260,8 @@ public class PostController {
         return ResponseEntity.status(OK).body(postMapper.toPostReactionResponse(reaction));
     }
 
-    /*__________________________________________COMMENT______________________________________________*/
+    private List<PostMedia> getPostMedias(Post post) {
+        return postService.previewMedias(post);
+    }
 
 }

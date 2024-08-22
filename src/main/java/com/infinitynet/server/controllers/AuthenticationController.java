@@ -31,6 +31,7 @@ import lombok.experimental.FieldDefaults;
 import static com.infinitynet.server.components.Translator.getLocalizedMessage;
 import static com.infinitynet.server.enums.RateLimitKeyType.BY_IP;
 import static com.infinitynet.server.enums.RateLimitKeyType.BY_TOKEN;
+import static com.infinitynet.server.exceptions.authentication.AuthenticationErrorCode.EXPIRED_PASSWORD;
 import static com.infinitynet.server.exceptions.authentication.AuthenticationErrorCode.INVALID_SIGNATURE;
 import static org.springframework.http.HttpStatus.*;
 
@@ -47,6 +48,11 @@ public class AuthenticationController {
     UserService userService;
 
     UserMapper userMapper = UserMapper.INSTANCE;
+
+    @GetMapping("/test")
+    public String test() {
+        throw new AuthenticationException(EXPIRED_PASSWORD, BAD_REQUEST);
+    }
 
     @Operation(summary = "Sign up", description = "Create new user")
     @PostMapping("/sign-up")

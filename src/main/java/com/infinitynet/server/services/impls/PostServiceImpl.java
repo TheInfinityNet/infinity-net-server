@@ -2,8 +2,7 @@ package com.infinitynet.server.services.impls;
 
 import com.infinitynet.server.entities.*;
 import com.infinitynet.server.enums.PostType;
-import com.infinitynet.server.enums.PostVisibility;
-import com.infinitynet.server.enums.ReactionType;
+import com.infinitynet.server.enums.PrivacySetting;
 import com.infinitynet.server.exceptions.post.PostException;
 import com.infinitynet.server.repositories.*;
 import com.infinitynet.server.services.PostService;
@@ -15,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -33,8 +33,6 @@ public class PostServiceImpl implements PostService {
     PostRepository postRepository;
 
     PostReactionRepository postReactionRepository;
-
-    PostMediaReactionRepository postMediaReactionRepository;
 
     PostMediaRepository postMediaRepository;
 
@@ -57,21 +55,32 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public Long countByPostAndReactionType(Post post, ReactionType type) {
-        return (type != null)
-                ? postReactionRepository.countByPostAndReactionType(post, type)
-                : postReactionRepository.countByPost(post);
+    @Transactional
+    public Post createPost(User owner, String content, PostType type, PrivacySetting privacySetting) {
+        return postRepository.save(Post.builder()
+                .user(owner)
+                .postType((type == null) ? USER_POST : type)
+                .privacySetting(privacySetting)
+                .content(content)
+                .build());
     }
 
     @Override
     @Transactional
-    public Post createPost(User owner, String content, PostType type, PostVisibility visibility) {
-        return postRepository.save(Post.builder()
-                .user(owner)
-                .postType((type == null) ? USER_POST : type)
-                .postVisibility(visibility)
-                .content(content)
-                .build());
+    @PostAuthorize("returnObject.user.email == authentication.name") // CHECK OWNER
+    public Post updatePost(String id, String content, PrivacySetting privacySetting) {
+        Post post = findById(id);
+        post.setContent(content);
+        post.setPrivacySetting(privacySetting);
+        postRepository.save(post);
+        return post;
+    }
+
+    @Override
+    @Transactional
+    @PostAuthorize("#post.user.email == authentication.name") // CHECK OWNER
+    public void deletePost(Post post) {
+        postRepository.delete(post);
     }
 
     @Override

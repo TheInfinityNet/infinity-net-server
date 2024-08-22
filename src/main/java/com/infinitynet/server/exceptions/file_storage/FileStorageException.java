@@ -1,23 +1,17 @@
 package com.infinitynet.server.exceptions.file_storage;
 
+import com.infinitynet.server.exceptions.AppException;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
 @Getter
-public class FileStorageException extends RuntimeException {
+public class FileStorageException extends AppException {
 
     public FileStorageException(FileStorageErrorCode fileStorageErrorCode, HttpStatus httpStatus) {
-        super(fileStorageErrorCode.getMessage());
+        super(fileStorageErrorCode.getMessage(), httpStatus);
         this.fileStorageErrorCode = fileStorageErrorCode;
-        this.httpStatus = httpStatus;
     }
 
     private final FileStorageErrorCode fileStorageErrorCode;
-    private Object[] moreInfo;
-    private final HttpStatus httpStatus;
-
-    public void setMoreInfo(Object[] moreInfo) {
-        this.moreInfo = moreInfo;
-    }
 
 }

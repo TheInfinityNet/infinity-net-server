@@ -1,6 +1,9 @@
 package com.infinitynet.server.configurations.security_configs;
 
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -23,12 +26,14 @@ import java.util.stream.Stream;
 @EnableMethodSecurity
 @Slf4j
 @RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class SecurityConfiguration {
 
     @Value("${api.prefix}")
-    private String API_PREFIX;
+    @NonFinal
+    String API_PREFIX;
 
-    private final CustomJwtDecoder customJwtDecoder;
+    CustomJwtDecoder customJwtDecoder;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
@@ -44,6 +49,7 @@ public class SecurityConfiguration {
                 "/auth/sign-in",
                 "/auth/sign-out",
                 "/auth/introspect",
+                "/auth/test",
                 "/actuator/health",
                 "/api-docs/**",
                 "/swagger-ui/**",

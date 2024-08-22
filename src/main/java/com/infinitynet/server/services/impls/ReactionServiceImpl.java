@@ -1,7 +1,7 @@
 package com.infinitynet.server.services.impls;
 
 import com.infinitynet.server.entities.*;
-import com.infinitynet.server.enums.PostVisibility;
+import com.infinitynet.server.enums.PrivacySetting;
 import com.infinitynet.server.enums.ReactionType;
 import com.infinitynet.server.exceptions.post.PostErrorCode;
 import com.infinitynet.server.exceptions.post.PostException;
@@ -88,10 +88,10 @@ public class ReactionServiceImpl<O, R> implements ReactionService<O, R> {
 
     @Override
     public R react(O owner, User user, ReactionType reactionType) {
-        PostVisibility postVisibility = switch (owner.getClass().getSimpleName()) {
-            case "Post" -> ((Post) owner).getPostVisibility();
+        PrivacySetting privacySetting = switch (owner.getClass().getSimpleName()) {
+            case "Post" -> ((Post) owner).getPrivacySetting();
 
-            case "PostMedia" -> ((PostMedia) owner).getPost().getPostVisibility();
+            case "PostMedia" -> ((PostMedia) owner).getPost().getPrivacySetting();
 
             default -> throw new PostException(POST_REACTION_NOT_FOUND, UNPROCESSABLE_ENTITY);
         };
@@ -104,7 +104,7 @@ public class ReactionServiceImpl<O, R> implements ReactionService<O, R> {
             default -> throw new PostException(POST_REACTION_NOT_FOUND, UNPROCESSABLE_ENTITY);
         };
 
-        if (postVisibility.equals(PostVisibility.ONLY_ME)) {
+        if (privacySetting.equals(PrivacySetting.ONLY_ME)) {
             if (!user.getId().equals(ownerUser.getId()))
                 throw new PostException(PostErrorCode.POST_NOT_FOUND, NOT_FOUND);
         }

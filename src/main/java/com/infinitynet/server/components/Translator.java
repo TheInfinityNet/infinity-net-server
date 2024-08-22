@@ -4,7 +4,6 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.NoSuchMessageException;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.stereotype.Component;
@@ -23,7 +22,7 @@ public class Translator {
         Translator.messageSource = messageSource;
     }
 
-    public static String getLocalizedMessage(String messageKey, Object... args) throws NoSuchMessageException {
+    public static String getLocalizedMessage(String messageKey, Object... args) {
         Locale locale = LocaleContextHolder.getLocale();
         return messageSource.getMessage(messageKey, args, locale);
     }

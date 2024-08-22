@@ -3,7 +3,6 @@ package com.infinitynet.server.services.impls;
 import com.infinitynet.server.entities.FileMetadata;
 import com.infinitynet.server.entities.Post;
 import com.infinitynet.server.entities.PostMedia;
-import com.infinitynet.server.enums.MediaOwnerType;
 import com.infinitynet.server.exceptions.file_storage.FileStorageException;
 import com.infinitynet.server.repositories.FileMetadataRepository;
 import com.infinitynet.server.repositories.PostMediaRepository;
@@ -24,7 +23,8 @@ import java.util.List;
 import java.util.UUID;
 
 import static com.infinitynet.server.Constants.KAFKA_TOPIC_HANDLE_MEDIA;
-import static com.infinitynet.server.enums.FileHandleAction.UPLOAD;
+import static com.infinitynet.server.enums.FileHandleAction.*;
+import static com.infinitynet.server.exceptions.file_storage.FileStorageErrorCode.CAN_NOT_STORE_FILE;
 import static com.infinitynet.server.exceptions.file_storage.FileStorageErrorCode.COULD_NOT_READ_FILE;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
@@ -63,28 +63,18 @@ public class FileServiceImpl<O, F> implements FileService<O, F> {
 
     @Override
     @Transactional
-    public void uploadFiles(O owner, MediaOwnerType type, List<MultipartFile> files) {
-        String prefixPath = switch (type) {
-            case POST -> "posts/";
-            case PROFILE -> "users/";
-            case COMMENT -> "comments/";
-            case GROUP -> "groups/";
-            case MESSAGE -> "messages/";
-
-        };
-
+    public void uploadFiles(O owner, List<MultipartFile> files) {
         List<F> results = new ArrayList<>();
         for (MultipartFile file : files) {
             String fileId = UUID.randomUUID().toString();
 
-            String backupPath = localStorageService.storeFile(file,
-                    prefixPath + ((Post) owner).getId() + "/" + fileId);
+            String backupPath = localStorageService.storeFile(file, getPrefixPath(owner) + "/" + fileId);
 
             kafkaTemplate.send(KAFKA_TOPIC_HANDLE_MEDIA, UPLOAD
                     + ":" + backupPath + ":" + file.getSize() + ":" + file.getContentType());
 
-            switch (type) {
-                case POST -> results.add((F) PostMedia.builder()
+            switch (owner.getClass().getSimpleName()) {
+                case "Post" -> results.add((F) PostMedia.builder()
                         .post((Post) owner)
                         .objectKey(backupPath)
                         .contentType(file.getContentType())
@@ -93,19 +83,33 @@ public class FileServiceImpl<O, F> implements FileService<O, F> {
             }
         }
 
-        switch (type) {
-            case POST -> postMediaRepository.saveAll((List<PostMedia>) results);
+        switch (owner.getClass().getSimpleName()) {
+            case "Post" -> postMediaRepository.saveAll((List<PostMedia>) results);
         }
     }
 
     @Override
     public void deleteFile(String fileId) {
-
+        String objectKey = ((FileMetadata) findById(fileId)).getObjectKey();
+        localStorageService.deleteFile(objectKey);
+        fileMetadataRepository.deleteById(fileId);
+        kafkaTemplate.send(KAFKA_TOPIC_HANDLE_MEDIA, DELETE_OBJECT + ":" + objectKey);
     }
 
     @Override
-    public void deleteFiles(String ownerId, MediaOwnerType type) {
+    public void deleteFolder(O owner) {
+        localStorageService.deleteFolder(getPrefixPath(owner));
+        switch (owner.getClass().getSimpleName()) {
+            case "Post" -> postMediaRepository.deleteAll(((Post) owner).getPostMedias());
+        }
+        kafkaTemplate.send(KAFKA_TOPIC_HANDLE_MEDIA, DELETE_PARENT_OBJECT + ":" + getPrefixPath(owner));
+    }
 
+    private String getPrefixPath(O owner) {
+        return switch (owner.getClass().getSimpleName()) {
+            case "Post" -> "posts/" + ((Post) owner).getId();
+            default -> throw new FileStorageException(CAN_NOT_STORE_FILE, BAD_REQUEST);
+        };
     }
 
 }
