@@ -2,7 +2,6 @@ package com.infinitynet.server.services.impls;
 
 import com.infinitynet.server.exceptions.file_storage.FileStorageException;
 import com.infinitynet.server.services.LocalStorageService;
-import org.apache.commons.io.FilenameUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
@@ -21,6 +20,7 @@ import static com.infinitynet.server.Constants.LOCAL_STORAGE_ROOT_FOLDER;
 import static com.infinitynet.server.Utils.isMedia;
 import static com.infinitynet.server.exceptions.file_storage.FileStorageErrorCode.*;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import static org.apache.commons.io.FilenameUtils.getExtension;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 @Service
@@ -47,7 +47,7 @@ public class LocalStorageServiceImpl implements LocalStorageService {
 
         if (fileSizeInMegabytes > 10.0f) throw new FileStorageException(FILE_TOO_LARGE, BAD_REQUEST);
 
-        String fileExtension = FilenameUtils.getExtension(file.getOriginalFilename());
+        String fileExtension = getExtension(file.getOriginalFilename());
         Path destinationFilePath = pathToNewFolder
                 .resolve(Paths.get(fileName + "." + fileExtension))
                 .normalize()
